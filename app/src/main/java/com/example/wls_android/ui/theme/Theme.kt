@@ -1,4 +1,4 @@
-package com.example.wls_android.ui.theme
+package com.example.compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -74,15 +74,15 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun WlsandroidTheme(
-    useDarkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable() () -> Unit
+fun WlsAndroidTheme(
+  useDarkTheme: Boolean = isSystemInDarkTheme(),
+  content: @Composable() () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
-        LightColors
-    } else {
-        DarkColors
-    }
+  val colors = if (!useDarkTheme) {
+    LightColors
+  } else {
+    DarkColors
+  }
 
     val systemUiController = rememberSystemUiController()
     systemUiController.setSystemBarsColor(colors.background)

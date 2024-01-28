@@ -6,7 +6,7 @@ data class Disturbance(
     @SerializedName("descriptions")
     val descriptions : List<Description>,
     @SerializedName("end_time")
-    val end_time : String,
+    val end_time : String?,
     @SerializedName("id")
     val id : String,
     @SerializedName("lines")

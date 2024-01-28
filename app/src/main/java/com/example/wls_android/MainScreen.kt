@@ -1,6 +1,5 @@
 package com.example.wls_android
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,12 +29,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
+import androidx.compose.ui.unit.sp
 import com.example.wls_android.data.Disturbance
 import com.example.wls_android.data.RetrofitHelper
 import com.example.wls_android.data.WlsApi
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,8 +61,9 @@ fun MainScreen() {
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = colorResource(id = R.color.main_color),
+                    titleContentColor = Color.White
+                    //titleContentColor = MaterialTheme.colorScheme.onErrorContainer,
                 ),
                 title = {
                     Text(text = "WLS")
@@ -82,7 +85,27 @@ fun MainScreen() {
 
 @Composable
 fun DisturbanceCard(disturbance: Disturbance) {
+    val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    //Log.e("ALARM", disturbance.end_time.substring(0,disturbance.end_time.indexOf('.')-1))
+    var strEndTime = disturbance.end_time
+    var strStartTime = disturbance.start_time
+
+    if (strEndTime != null) {
+        strEndTime = strEndTime.substring(0, strEndTime.indexOf('.'))
+        if (strEndTime.length == 17)
+            strEndTime += "0"
+    }
+
+    if (strStartTime.length == 17)
+        strStartTime += "0"
+
+    val end_time = stringToDateTime(strEndTime, parseFormatter)
+    val start_time = stringToDateTime(disturbance.start_time, parseFormatter)
+
+    val id = disturbance.id
     val lines = disturbance.lines
+    val title = disturbance.title
+
     /*ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
@@ -99,24 +122,32 @@ fun DisturbanceCard(disturbance: Disturbance) {
         shape = RoundedCornerShape(5.dp),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(5.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                var color = Color("#2196f3".toColorInt())
-                for(line in disturbance.lines) {
-                    when(line.type) {
-                        0 -> color = Color("#2196f3".toColorInt())
-                        1 -> color = Color("#f44336".toColorInt())
+                var color = colorResource(id = R.color.line_bus)
+                for (line in lines) {
+                    when (line.type) {
+                        0 -> color = colorResource(id = R.color.line_bus)
+                        1 -> color = colorResource(id = R.color.line_tram)
                         2 -> {
-                            if(line.id.startsWith("U1", true)) color = Color("#f44336".toColorInt())
-                            else if(line.id.startsWith("U2", true)) color = Color("#e91e63".toColorInt())
-                            else if(line.id.startsWith("U3", true)) color = Color("#ff9800".toColorInt())
-                            else if(line.id.startsWith("U4", true)) color = Color("#4caf50".toColorInt())
-                            else if(line.id.startsWith("U6", true)) color = Color("#795548".toColorInt())
+                            if (line.id.startsWith("U1", true)) color =
+                                colorResource(id = R.color.line_u1)
+                            else if (line.id.startsWith("U2", true)) color =
+                                colorResource(id = R.color.line_u2)
+                            else if (line.id.startsWith("U3", true)) color =
+                                colorResource(id = R.color.line_u3)
+                            else if (line.id.startsWith("U4", true)) color =
+                                colorResource(id = R.color.line_u4)
+                            else if (line.id.startsWith("U6", true)) color =
+                                colorResource(id = R.color.line_u6)
                         }
-                        else -> color = Color("#9c27b0".toColorInt())
+
+                        else -> color = colorResource(id = R.color.line_miscellaneous)
                     }
 
                     Card(
@@ -125,32 +156,70 @@ fun DisturbanceCard(disturbance: Disturbance) {
                         ),
                         shape = RoundedCornerShape(5.dp),
                         modifier = Modifier
-                            .wrapContentSize().padding(5.dp)
+                            .wrapContentSize()
+                            .padding(5.dp)
 
-                        ) {
+                    ) {
                         Column(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = if(line.id.length <= 3) Modifier.wrapContentHeight().width(40.dp) else Modifier.wrapContentSize()
+                            modifier = if (line.id.length <= 3) Modifier
+                                .wrapContentHeight()
+                                .width(40.dp) else Modifier.wrapContentSize()
                         ) {
                             Text(
                                 text = line.id,
                                 modifier = Modifier.padding(2.dp),
-                                textAlign = TextAlign.Center
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+                if (disturbance.end_time == null) {
+                    if (start_time != null) {
+                        Text(
+                            text = "Seit: ${start_time.dayOfMonth}.${if (start_time.month.value < 10) "0" + start_time.month.value else start_time.month.value}.${start_time.year} ${start_time.hour}:${start_time.minute}",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(5.dp),
+                            textAlign = TextAlign.End,
+                            //color = colorResource(id = R.color.main_color)
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (start_time != null && end_time != null) {
+                            Text(
+                                text = "Von: ${start_time.dayOfMonth}.${if (start_time.month.value < 10) "0" + start_time.month.value else start_time.month.value}.${start_time.year} ${start_time.hour}:${start_time.minute}",
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth(),
+                                //color = colorResource(id = R.color.main_color)
+                            )
+                            Text(
+                                text = "Bis: ${end_time.dayOfMonth}.${if (end_time.month.value < 10) "0" + end_time.month.value else end_time.month.value}.${end_time.year} ${end_time.hour}:${end_time.minute}",
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth(),
+                                //color = colorResource(id = R.color.main_color)
                             )
                         }
                     }
                 }
             }
-            val title = disturbance.title
             Text(
-                text = title.substring(title.indexOf(':')+2, title.length),
+                text = title.substring(title.indexOf(':') + 2, title.length),
                 modifier = Modifier
                     .padding(5.dp)
                     .fillMaxWidth(),
-                textAlign = TextAlign.Start
+                fontSize = 18.sp,
+                //fontWeight = FontWeight.Bold
             )
-            Log.e(disturbance.title, disturbance.title.length.toString())
         }
     }
+}
+
+fun stringToDateTime(dateStr: String?, formatterFrom: DateTimeFormatter): LocalDateTime? {
+    if (dateStr == null) return null
+    return LocalDateTime.parse(dateStr, formatterFrom)
 }

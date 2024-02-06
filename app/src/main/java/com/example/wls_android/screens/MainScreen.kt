@@ -196,7 +196,7 @@ fun MainScreen() {
         LazyColumn(
             modifier = Modifier
                 .padding(it)
-                .padding(6.dp)
+                .padding(start = 6.dp, end = 6.dp)
                 .fillMaxSize()
         ) {
             items(disturbanceList) { disturbance ->

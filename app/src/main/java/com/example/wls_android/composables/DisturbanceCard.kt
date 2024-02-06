@@ -14,10 +14,11 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wls_android.data.Disturbance
-import com.example.wls_android.screens.stringToDateTime
+import com.example.wls_android.screens.getDateText
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -30,21 +31,13 @@ fun DisturbanceCard(
     //Log.e("ALARM", disturbance.end_time.substring(0,disturbance.end_time.indexOf('.')-1))
 
     var endTime: String? = disturbance.end_time
-    var startTime: String? = disturbance.start_time
+    val startTime: String = disturbance.start_time
 
     if (endTime != null) {
         try {
             endTime = endTime.substring(0, endTime.indexOf('.'))
         } catch (_: Exception) {
         }
-    }
-
-    stringToDateTime(startTime, parseFormatter)?.let {
-        startTime = it.format(formatFormatter)
-    }
-
-    stringToDateTime(endTime, parseFormatter)?.let {
-        endTime = it.format(formatFormatter)
     }
 
     val lines = disturbance.lines
@@ -78,15 +71,15 @@ fun DisturbanceCard(
             Text(
                 text = title.substring(title.indexOf(':') + 2, title.length),
                 modifier = Modifier
-                    .padding(5.dp)
+                    .padding(start = 5.dp)
                     .fillMaxWidth(),
-                fontSize = 18.sp,
-                //fontWeight = FontWeight.Bold
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
             Text(
-                text = title.substring(title.indexOf(':') + 2, title.length),
+                text = getDateText(startTime, endTime),
                 modifier = Modifier
-                    .padding(5.dp)
+                    .padding(start = 5.dp)
                     .fillMaxWidth(),
                 fontSize = 18.sp,
                 //fontWeight = FontWeight.Bold

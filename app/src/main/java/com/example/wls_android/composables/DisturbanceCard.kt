@@ -1,4 +1,4 @@
-package com.example.wls_android
+package com.example.wls_android.composables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -14,10 +14,10 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wls_android.data.Disturbance
+import com.example.wls_android.screens.stringToDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -28,23 +28,22 @@ fun DisturbanceCard(
     val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     val formatFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
     //Log.e("ALARM", disturbance.end_time.substring(0,disturbance.end_time.indexOf('.')-1))
-    var strEndTime = disturbance.end_time
-    val strStartTime = disturbance.start_time
 
-    var endTime : String? = null
-    var startTime : String? = null
+    var endTime: String? = disturbance.end_time
+    var startTime: String? = disturbance.start_time
 
-    if (strEndTime != null) {
+    if (endTime != null) {
         try {
-            strEndTime = strEndTime.substring(0, strEndTime.indexOf('.'))
-        } catch (_: Exception) {}
+            endTime = endTime.substring(0, endTime.indexOf('.'))
+        } catch (_: Exception) {
+        }
     }
 
-    stringToDateTime(strStartTime, parseFormatter)?.let {
+    stringToDateTime(startTime, parseFormatter)?.let {
         startTime = it.format(formatFormatter)
     }
 
-    stringToDateTime(strEndTime, parseFormatter)?.let {
+    stringToDateTime(endTime, parseFormatter)?.let {
         endTime = it.format(formatFormatter)
     }
 
@@ -75,38 +74,15 @@ fun DisturbanceCard(
                         modifier = Modifier.padding(5.dp)
                     )
                 }
-                if (disturbance.end_time == null) {
-                    if (startTime != null && endTime == null) {
-                        Text(
-                            text = "Seit: $startTime",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp),
-                            textAlign = TextAlign.End,
-                            //color = colorResource(id = R.color.main_color)
-                        )
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (startTime != null && endTime != null) {
-                            Text(
-                                text = "Von: $startTime",
-                                textAlign = TextAlign.End,
-                                modifier = Modifier.fillMaxWidth(),
-                                //color = colorResource(id = R.color.main_color)
-                            )
-                            Text(
-                                text = "Bis: $endTime",
-                                textAlign = TextAlign.End,
-                                modifier = Modifier.fillMaxWidth(),
-                                //color = colorResource(id = R.color.main_color)
-                            )
-                        }
-                    }
-                }
             }
+            Text(
+                text = title.substring(title.indexOf(':') + 2, title.length),
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth(),
+                fontSize = 18.sp,
+                //fontWeight = FontWeight.Bold
+            )
             Text(
                 text = title.substring(title.indexOf(':') + 2, title.length),
                 modifier = Modifier

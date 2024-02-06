@@ -1,4 +1,4 @@
-package com.example.wls_android
+package com.example.wls_android.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.example.wls_android.R
 import com.example.wls_android.data.Line
 
 @Composable
@@ -51,9 +52,7 @@ fun LineIcon(line : Line, modifier : Modifier = Modifier) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = if (line.id.length <= 3) Modifier
-                .wrapContentHeight()
-                .width(40.dp) else Modifier.wrapContentSize()
+            modifier = if (line.id.length <= 3) Modifier.wrapContentHeight().width(40.dp) else Modifier.wrapContentSize()
         ) {
             Text(
                 text = line.id,

@@ -1,4 +1,4 @@
-package com.example.wls_android
+package com.example.wls_android.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -13,7 +13,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wls_android.R
 import com.example.wls_android.data.Description
+import com.example.wls_android.screens.stringToDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -22,7 +24,6 @@ fun DescriptionCard(descriptions : List<Description>) {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
-        //modifier = Modifier.padding(5.dp)
     ) {
         Column(
             modifier = Modifier.padding(5.dp)

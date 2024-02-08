@@ -19,17 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wls_android.data.Disturbance
 import com.example.wls_android.screens.getDateText
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun DisturbanceCard(
     disturbance: Disturbance,
     modifier: Modifier = Modifier
 ) {
-    val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val formatFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
-    //Log.e("ALARM", disturbance.end_time.substring(0,disturbance.end_time.indexOf('.')-1))
-
     var endTime: String? = disturbance.end_time
     val startTime: String = disturbance.start_time
 

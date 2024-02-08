@@ -1,8 +1,8 @@
 package com.example.wls_android.data
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Data(
-    @SerializedName("data")
     val data : List<Disturbance>
 )

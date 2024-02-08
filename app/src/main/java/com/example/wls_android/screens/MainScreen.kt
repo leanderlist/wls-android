@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -50,9 +49,11 @@ import androidx.compose.ui.zIndex
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceCard
 import com.example.wls_android.composables.LineIcon
+import com.example.wls_android.data.Data
 import com.example.wls_android.data.Disturbance
-import com.example.wls_android.data.RetrofitHelper
-import com.example.wls_android.data.WlsApi
+import com.example.wls_android.data.getKtorClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -75,8 +76,6 @@ fun MainScreen() {
         mutableStateOf<Disturbance?>(null)
     }
 
-    val wlsApi = RetrofitHelper.getInstance().create(WlsApi::class.java)
-
     val disturbanceList = remember {
         mutableStateListOf<Disturbance>()
     }
@@ -86,9 +85,15 @@ fun MainScreen() {
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(Unit) {
             try {
-                val temp = wlsApi.getDisturbances()
-                val body = temp.body()
-                if (temp.code() == 200) {
+                val client = getKtorClient()
+                val response = client.get {
+                    url {
+                        parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    }
+                }
+                val body = response.body<Data>()
+                if (response.status.value in 200..299) {
                     if (body != null) {
                         disturbanceList.clear()
                         disturbanceList.addAll(body.data)
@@ -99,7 +104,8 @@ fun MainScreen() {
                     errorMessage = "Es sind keine Störungen vorhanden"
                 }
             } catch(e : Exception) {
-                errorMessage = "Es konnte keine Verbindung hergestellt werden"
+                //errorMessage = "Es konnte keine Verbindung hergestellt werden"
+                errorMessage = e.printStackTrace().toString()
             }
             pullRefreshState.endRefresh()
         }
@@ -107,9 +113,15 @@ fun MainScreen() {
 
     LaunchedEffect(key1 = Unit) {
         try {
-            val temp = wlsApi.getDisturbances()
-            val body = temp.body()
-            if (temp.code() == 200) {
+            val client = getKtorClient()
+            val response = client.get {
+                url {
+                    parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                }
+            }
+            val body = response.body<Data>()
+            if (response.status.value in 200..299) {
                 if(body != null) {
                     disturbanceList.addAll(body.data)
                 } else
@@ -118,7 +130,8 @@ fun MainScreen() {
                 errorMessage = "Es sind keine Störungen vorhanden"
             }
         } catch(e : Exception) {
-            errorMessage = "Es konnte keine Verbindung hergestellt werden"
+            //errorMessage = "Es konnte keine Verbindung hergestellt werden"
+            errorMessage = e.printStackTrace().toString()
         }
     }
 
@@ -146,7 +159,6 @@ fun MainScreen() {
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                modifier = Modifier.wrapContentHeight(),
                 sheetState = sheetState
             ) {
                 if (sheetDisturbance != null) {
@@ -159,7 +171,6 @@ fun MainScreen() {
                             .fillMaxWidth()
                             .padding(10.dp)
                             .navigationBarsPadding()
-                            .wrapContentHeight()
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth()

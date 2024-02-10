@@ -68,7 +68,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisturbanceListScreen(navController : NavHostController, filterData : FilterData) {
+fun DisturbanceListScreen(navController: NavHostController, filterData: FilterData) {
 
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState()
@@ -100,7 +100,7 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
 
     val pullRefreshState = rememberPullToRefreshState()
 
-    val filters : SnapshotStateMap<String, String> = filterData.filters
+    val filters: SnapshotStateMap<String, String> = filterData.filters
 
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(Unit) {
@@ -108,11 +108,17 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                 val client = getKtorClient("/api/disturbances")
                 val response = client.get {
                     url {
-                        if(filters.isEmpty()) {
-                            parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                            parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        if (filters.isEmpty()) {
+                            parameters.append(
+                                "from",
+                                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            )
+                            parameters.append(
+                                "to",
+                                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            )
                         } else {
-                            for(entry in filters.toMap()) {
+                            for (entry in filters.toMap()) {
                                 parameters.append(entry.key, entry.value)
                             }
                         }
@@ -127,12 +133,12 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                         errorMessage = ""
                     } else
                         errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
-                        spinnerLoading = false
+                    spinnerLoading = false
                 } else {
                     errorMessage = "Es sind keine Störungen vorhanden"
                     spinnerLoading = false
                 }
-            } catch(e : Exception) {
+            } catch (e: Exception) {
                 snackBarHost.showSnackbar("Es konnte keine Verbindung hergestellt werden")
                 spinnerLoading = false
             }
@@ -145,11 +151,17 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
             val client = getKtorClient("/api/disturbances")
             val response = client.get {
                 url {
-                    if(filters.isEmpty()) {
-                        parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                        parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    if (filters.isEmpty()) {
+                        parameters.append(
+                            "from",
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
+                        parameters.append(
+                            "to",
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
                     } else {
-                        for(entry in filters.toMap()) {
+                        for (entry in filters.toMap()) {
                             parameters.append(entry.key, entry.value)
                         }
                     }
@@ -157,7 +169,7 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
             }
             val body = response.body<Data>()
             if (response.status.value in 200..299) {
-                if(body != null) {
+                if (body != null) {
                     disturbanceList.addAll(body.data)
                 } else
                     errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
@@ -166,7 +178,7 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                 errorMessage = "Es sind keine Störungen vorhanden"
                 spinnerLoading = false
             }
-        } catch(e : Exception) {
+        } catch (e: Exception) {
             errorMessage = "Es konnte keine Verbindung hergestellt werden"
             spinnerLoading = false
         }
@@ -186,7 +198,8 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     IconButton(onClick = { navController.navigate(Screen.Filter.route) }) {
                         Icon(
                             imageVector = Icons.Filled.Menu,
-                            contentDescription = "Localized description"
+                            contentDescription = "Localized description",
+                            tint = Color.White
                         )
                     }
                 }
@@ -202,7 +215,7 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                 sheetState = sheetState
             ) {
                 if (sheetDisturbance != null) {
-                    val initialDate = sheetDisturbance!!.start_time.substring(0,10)
+                    val initialDate = sheetDisturbance!!.start_time.substring(0, 10)
                     val descriptions = sheetDisturbance!!.descriptions
                     val title = sheetDisturbance!!.title
 
@@ -226,7 +239,8 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                             Spacer(modifier = Modifier.weight(1F))
                             IconButton(
                                 onClick = {
-                                    val url = "https://wls.byleo.net/stoerung/${sheetDisturbance!!.id}"
+                                    val url =
+                                        "https://wls.byleo.net/stoerung/${sheetDisturbance!!.id}"
                                     val intent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         putExtra(Intent.EXTRA_TEXT, url)
@@ -252,7 +266,10 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = getDateText(sheetDisturbance!!.start_time, sheetDisturbance!!.end_time),
+                            text = getDateText(
+                                sheetDisturbance!!.start_time,
+                                sheetDisturbance!!.end_time
+                            ),
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
                         Text(
@@ -264,10 +281,11 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                             text = descriptions[0].description,
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
-                        for(i in 1 until descriptions.size) {
-                            val descriptionDate = descriptions[i].time.substring(0, descriptions[i].time.indexOf('.'))
+                        for (i in 1 until descriptions.size) {
+                            val descriptionDate =
+                                descriptions[i].time.substring(0, descriptions[i].time.indexOf('.'))
 
-                            if(initialDate.equals(descriptionDate.substring(0,10))) {
+                            if (initialDate.equals(descriptionDate.substring(0, 10))) {
                                 Text(
                                     text = "Update: ${formatStringDate(descriptionDate, 3)}",
                                     fontWeight = FontWeight.Bold,
@@ -298,7 +316,7 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     .zIndex(10F)
                     .padding(top = 64.dp)
             )
-            if(spinnerLoading)
+            if (spinnerLoading)
                 CircularProgressIndicator(
                     modifier = Modifier
                         .size(24.dp)
@@ -340,12 +358,13 @@ fun stringToDateTime(dateStr: String?, formatterFrom: DateTimeFormatter): LocalD
     if (dateStr == null) return null
     return LocalDateTime.parse(dateStr, formatterFrom)
 }
-fun formatStringDate(dateStr : String, type : Int) : String {
+
+fun formatStringDate(dateStr: String, type: Int): String {
     val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     val dateObj = LocalDateTime.parse(dateStr, parseFormatter)
 
 
-    when(type) {
+    when (type) {
         1 -> return dateObj.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
         2 -> return dateObj.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         3 -> return dateObj.format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -353,38 +372,40 @@ fun formatStringDate(dateStr : String, type : Int) : String {
     return dateObj.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
 }
 
-fun getDateText(startTime : String, endTime : String?) : String {
+fun getDateText(startTime: String, endTime: String?): String {
     val initialDate = formatStringDate(startTime, 2)
-    var strEndTime : String? = endTime
+    var strEndTime: String? = endTime
 
 
-    if(strEndTime != null && strEndTime.length > 19) {
+    if (strEndTime != null && strEndTime.length > 19) {
         strEndTime = strEndTime.substringBefore('.')
     }
 
     var output = ""
     var prefix = ""
 
-    if(strEndTime == null)
+    if (strEndTime == null)
         prefix = "Seit"
     else
         prefix = "Von"
 
-    if(initialDate.equals(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))))
+    if (initialDate.equals(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))))
         output = "$prefix heute ${formatStringDate(startTime, 3)}"
     else
         output = "$prefix ${formatStringDate(startTime, 1)}"
 
-    if(strEndTime == null)
+    if (strEndTime == null)
         return output
     else
-        if(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")).equals(formatStringDate(strEndTime, 2))) {
-            if(initialDate.equals(formatStringDate(strEndTime, 2)))
+        if (LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                .equals(formatStringDate(strEndTime, 2))
+        ) {
+            if (initialDate.equals(formatStringDate(strEndTime, 2)))
                 output += " bis ${formatStringDate(strEndTime, 3)}"
             else
                 output += " bis heute ${formatStringDate(strEndTime, 3)}"
         } else {
-            if(initialDate.equals(formatStringDate(strEndTime, 2)))
+            if (initialDate.equals(formatStringDate(strEndTime, 2)))
                 output += " bis ${formatStringDate(strEndTime, 3)}"
             else
                 output += " bis ${formatStringDate(strEndTime, 1)}"

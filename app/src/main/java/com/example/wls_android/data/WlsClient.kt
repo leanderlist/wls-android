@@ -19,14 +19,14 @@ import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-fun getKtorClient(): HttpClient {
+fun getKtorClient(path : String): HttpClient {
     return HttpClient(CIO) {
         expectSuccess = false
         defaultRequest {
             url {
                 protocol = URLProtocol.HTTPS
                 host = "wls.byleo.net"
-                path("/api/disturbances")
+                path(path)
             }
             headers.appendIfNameAbsent(
                     HttpHeaders.ContentType,

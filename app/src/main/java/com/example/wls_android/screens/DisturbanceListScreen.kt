@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +36,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,12 +48,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavHostController
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceCard
 import com.example.wls_android.composables.LineIcon
 import com.example.wls_android.data.Data
 import com.example.wls_android.data.Disturbance
 import com.example.wls_android.data.getKtorClient
+import com.example.wls_android.navigation.Screen
+import com.example.wls_android.viewmodel.FilterData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import java.time.LocalDate
@@ -60,7 +65,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun DisturbanceListScreen(navController : NavHostController, filterData : FilterData) {
 
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState()
@@ -82,14 +87,22 @@ fun MainScreen() {
 
     val pullRefreshState = rememberPullToRefreshState()
 
+    val filters : SnapshotStateMap<String, String> = filterData.filters
+
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(Unit) {
             try {
-                val client = getKtorClient()
+                val client = getKtorClient("/api/disturbances")
                 val response = client.get {
                     url {
-                        parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                        parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        if(filters.isEmpty()) {
+                            parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                            parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        } else {
+                            for(entry in filters.toMap()) {
+                                parameters.append(entry.key, entry.value)
+                            }
+                        }
                     }
                 }
                 val body = response.body<Data>()
@@ -99,13 +112,12 @@ fun MainScreen() {
                         disturbanceList.addAll(body.data)
                         errorMessage = ""
                     } else
-                        errorMessage = "TESTTEST"
+                        errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
                 } else {
                     errorMessage = "Es sind keine Störungen vorhanden"
                 }
             } catch(e : Exception) {
-                //errorMessage = "Es konnte keine Verbindung hergestellt werden"
-                errorMessage = e.printStackTrace().toString()
+                errorMessage = "Es konnte keine Verbindung hergestellt werden"
             }
             pullRefreshState.endRefresh()
         }
@@ -113,11 +125,17 @@ fun MainScreen() {
 
     LaunchedEffect(key1 = Unit) {
         try {
-            val client = getKtorClient()
+            val client = getKtorClient("/api/disturbances")
             val response = client.get {
                 url {
-                    parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                    parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    if(filters.isEmpty()) {
+                        parameters.append("from", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        parameters.append("to", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    } else {
+                        for(entry in filters.toMap()) {
+                            parameters.append(entry.key, entry.value)
+                        }
+                    }
                 }
             }
             val body = response.body<Data>()
@@ -125,7 +143,7 @@ fun MainScreen() {
                 if(body != null) {
                     disturbanceList.addAll(body.data)
                 } else
-                    errorMessage = "TEST2TEST"
+                    errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
             } else {
                 errorMessage = "Es sind keine Störungen vorhanden"
             }
@@ -146,7 +164,7 @@ fun MainScreen() {
                     Text(text = "WLS")
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { navController.navigate(Screen.Filter.route) }) {
                         Icon(
                             imageVector = Icons.Filled.Menu,
                             contentDescription = "Localized description"
@@ -178,7 +196,9 @@ fun MainScreen() {
                             for (line in sheetDisturbance!!.lines) {
                                 LineIcon(
                                     line = line,
-                                    modifier = Modifier.padding(end = 10.dp, bottom = 5.dp).align(Alignment.CenterVertically)
+                                    modifier = Modifier
+                                        .padding(end = 10.dp, bottom = 5.dp)
+                                        .align(Alignment.CenterVertically)
                                 )
                             }
                             Spacer(modifier = Modifier.weight(1F))
@@ -256,6 +276,10 @@ fun MainScreen() {
                     .zIndex(10F)
                     .padding(top = 64.dp)
             )
+            if(disturbanceList.isEmpty())
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp).padding(top = 112.dp).align(Alignment.TopCenter)
+                )
             LazyColumn(
                 modifier = Modifier
                     .padding(it)

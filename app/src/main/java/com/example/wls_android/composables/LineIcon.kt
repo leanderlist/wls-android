@@ -1,5 +1,6 @@
 package com.example.wls_android.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -20,7 +21,7 @@ import com.example.wls_android.R
 import com.example.wls_android.data.Line
 
 @Composable
-fun LineIcon(line : Line, modifier : Modifier = Modifier) {
+fun LineIcon(line: Line, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, enabledState : Boolean = false) {
     var color = colorResource(id = R.color.line_bus)
     when (line.type) {
         0 -> color = colorResource(id = R.color.line_bus)
@@ -42,17 +43,27 @@ fun LineIcon(line : Line, modifier : Modifier = Modifier) {
     }
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = color
-        ),
+        colors = if (!enabledState) {
+            CardDefaults.cardColors(
+                containerColor = color
+            )
+        } else CardDefaults.cardColors(containerColor = Color.LightGray),
         shape = RoundedCornerShape(5.dp),
-        modifier = modifier.wrapContentSize()
+        modifier = if (onClick != null) {
+            modifier
+                .wrapContentSize()
+                .clickable {
+                    onClick()
+                }
+        } else modifier.wrapContentSize()
 
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = if (line.id.length <= 3) Modifier.wrapContentHeight().width(40.dp) else Modifier.wrapContentSize()
+            modifier = if (line.id.length <= 3) Modifier
+                .wrapContentHeight()
+                .width(40.dp) else Modifier.wrapContentSize()
         ) {
             Text(
                 text = line.id,

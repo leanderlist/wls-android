@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -140,17 +141,21 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
         LazyColumn(
             modifier = Modifier
                 .padding(it)
-                .padding(10.dp)
                 .fillMaxSize()
+                .navigationBarsPadding()
         ) {
             item {
                 Text(
                     text = "Filter",
-                    fontSize = 30.sp
+                    fontSize = 30.sp,
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .padding(top = 10.dp)
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
                 ) {
                     Checkbox(
                         checked = active,
@@ -169,7 +174,8 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                 }
                 ExposedDropdownMenuBox(
                     expanded = dropDownExpanded,
-                    onExpandedChange = { change -> dropDownExpanded = change }
+                    onExpandedChange = { change -> dropDownExpanded = change },
+                    modifier = Modifier.padding(horizontal = 10.dp)
                 ) {
                     TextField(
                         value = dropDownValue,
@@ -232,7 +238,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                         readOnly = true,
                         modifier = Modifier
                             .weight(1F)
-                            .padding(end = 2.5F.dp),
+                            .padding(start = 10.dp, end = 5.dp),
                         interactionSource = remember { MutableInteractionSource() }
                             .also { interactionSource ->
                                 LaunchedEffect(interactionSource) {
@@ -249,7 +255,8 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                             onDismissRequest = {},
                             confirmButton = {
                                 Button(onClick = {
-                                    fromDate = convertMillisToLocalDateTime(fromPickerState.selectedDateMillis)
+                                    fromDate =
+                                        convertMillisToLocalDateTime(fromPickerState.selectedDateMillis)
                                     showFromPicker = false
                                 }
                                 ) {
@@ -275,7 +282,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                         readOnly = true,
                         modifier = Modifier
                             .weight(1F)
-                            .padding(end = 2.5F.dp),
+                            .padding(start = 5.dp, end = 10.dp),
                         interactionSource = remember { MutableInteractionSource() }
                             .also { interactionSource ->
                                 LaunchedEffect(interactionSource) {
@@ -292,7 +299,8 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                             onDismissRequest = {},
                             confirmButton = {
                                 Button(onClick = {
-                                    toDate = convertMillisToLocalDateTime(toPickerState.selectedDateMillis)
+                                    toDate =
+                                        convertMillisToLocalDateTime(toPickerState.selectedDateMillis)
                                     showToPicker = false
                                 }
                                 ) {
@@ -319,7 +327,9 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                     modifier = Modifier.padding(vertical = 5.dp)
                 )
                 Button(
-
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp),
                     onClick = {
                         filterData.resetFilters()
 
@@ -372,14 +382,19 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                             Log.e("active", "true")
                         }
 
-                        filterData.addFilter("from", fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        filterData.addFilter(
+                            "from",
+                            fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
                         Log.e("from", fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                        filterData.addFilter("to", toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                        filterData.addFilter(
+                            "to",
+                            toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
                         Log.e("to", toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
                         navController.popBackStack()
                     },
-                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(text = "Filter Anwenden")
                 }

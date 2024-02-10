@@ -23,6 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -85,6 +88,16 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
         mutableStateListOf<Disturbance>()
     }
 
+    var spinnerLoading by remember {
+        mutableStateOf(true)
+    }
+
+    val snackBarHost = remember {
+        SnackbarHostState()
+    }
+
+    val scope = rememberCoroutineScope()
+
     val pullRefreshState = rememberPullToRefreshState()
 
     val filters : SnapshotStateMap<String, String> = filterData.filters
@@ -110,14 +123,18 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     if (body != null) {
                         disturbanceList.clear()
                         disturbanceList.addAll(body.data)
+                        spinnerLoading = false
                         errorMessage = ""
                     } else
                         errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
+                        spinnerLoading = false
                 } else {
                     errorMessage = "Es sind keine Störungen vorhanden"
+                    spinnerLoading = false
                 }
             } catch(e : Exception) {
-                errorMessage = "Es konnte keine Verbindung hergestellt werden"
+                snackBarHost.showSnackbar("Es konnte keine Verbindung hergestellt werden")
+                spinnerLoading = false
             }
             pullRefreshState.endRefresh()
         }
@@ -144,12 +161,14 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     disturbanceList.addAll(body.data)
                 } else
                     errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
+                spinnerLoading = false
             } else {
                 errorMessage = "Es sind keine Störungen vorhanden"
+                spinnerLoading = false
             }
         } catch(e : Exception) {
-            //errorMessage = "Es konnte keine Verbindung hergestellt werden"
-            errorMessage = e.printStackTrace().toString()
+            errorMessage = "Es konnte keine Verbindung hergestellt werden"
+            spinnerLoading = false
         }
     }
 
@@ -172,6 +191,9 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHost)
         }
     ) {
         if (showBottomSheet) {
@@ -276,9 +298,12 @@ fun DisturbanceListScreen(navController : NavHostController, filterData : Filter
                     .zIndex(10F)
                     .padding(top = 64.dp)
             )
-            if(disturbanceList.isEmpty())
+            if(spinnerLoading)
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp).padding(top = 112.dp).align(Alignment.TopCenter)
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(top = 112.dp)
+                        .align(Alignment.TopCenter)
                 )
             LazyColumn(
                 modifier = Modifier

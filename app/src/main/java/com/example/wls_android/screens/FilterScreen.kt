@@ -50,6 +50,7 @@ import com.example.wls_android.viewmodel.FilterData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -111,8 +112,15 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
             if (response.status.value in 200..299) {
                 if (body != null) {
                     lineStateList.clear()
-                    for (line in body.data) {
-                        lineStateList.add(LineStatePair(line, true))
+                    if (!filterData.filters.isEmpty()) {
+                        lineStateList.clear()
+                        for (line in body.data) {
+                            lineStateList.add(LineStatePair(line, false))
+                        }
+                    } else {
+                        for (line in body.data) {
+                            lineStateList.add(LineStatePair(line, true))
+                        }
                     }
                 } else
                     errorMessage = "Es konnten keine Linien gefunden werden"
@@ -123,6 +131,50 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
             errorMessage = e.printStackTrace().toString()
         }
     }
+
+
+
+    if (!filterData.filters.isEmpty()) {
+
+        //parse enabled lines
+        var lineList = filterData.filters["line"]?.split(",")?.toMutableList()
+        Log.e("awhawg", lineList.toString())
+        if (lineList != null) {
+            lineStateList.forEachIndexed { index, pair ->
+                if(pair.line.id in lineList) {
+                    lineList.remove(pair.line.id)
+                    lineStateList[index] = LineStatePair(pair.line, true)
+                }
+            }
+            /*
+            for(pair in lineStateList) {
+                if(pair.line.id in lineList) {
+                    lineList.remove(pair.line.id)
+                }
+            }*/
+        }
+
+        //parse types
+        val typeListStr = filterData.filters["type"]?.split(",")
+        val typeList : List<Int>? = typeListStr?.map { it.toInt() }
+        if (typeList != null) {
+            disturbanceTypes.forEachIndexed { index, value ->
+                disturbanceTypes[index] = index in typeList
+            }
+        }
+
+        //parse from & to
+        val parseFromDate = filterData.filters["from"]
+        if(parseFromDate != null) {
+            fromDate = LocalDate.parse(parseFromDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
+        }
+        val parseToDate = filterData.filters["to"]
+        if(parseToDate != null) {
+            fromDate = LocalDate.parse(parseToDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
+        }
+
+    }
+
 
 
     Scaffold(
@@ -342,8 +394,6 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                         lineStringBuilder.setLength(lineStringBuilder.length - 1)
                         filterData.addFilter("line", lineStringBuilder.toString())
 
-                        Log.e("lineData", lineStringBuilder.toString())
-
                         //type parameter
                         val typeStringBuilder = StringBuilder("")
                         for (i in 0 until disturbanceTypes.size) {
@@ -354,8 +404,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                         typeStringBuilder.setLength(typeStringBuilder.length - 1)
                         filterData.addFilter("type", typeStringBuilder.toString())
 
-                        Log.e("typeData", typeStringBuilder.toString())
-
+                        //order parameter
                         when (dropDownValue) {
                             "Startzeit - neuste zuerst" -> {
                                 filterData.addFilter("order", "start")
@@ -379,19 +428,19 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                         }
                         if (active) {
                             filterData.addFilter("active", "true")
-                            Log.e("active", "true")
                         }
 
+                        //date filters
                         filterData.addFilter(
                             "from",
                             fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                         )
-                        Log.e("from", fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                         filterData.addFilter(
                             "to",
                             toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                         )
-                        Log.e("to", toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+
+                        Log.e(lineStateList.toList().size.toString(), lineStateList.toList().toString())
 
                         navController.popBackStack()
                     },

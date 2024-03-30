@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[0],
                     onCheckedChange = { disturbanceTypes[0] = !disturbanceTypes[0] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Verspätungen",
@@ -50,6 +53,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[1],
                     onCheckedChange = { disturbanceTypes[1] = !disturbanceTypes[1] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Verkehrsunfälle",
@@ -63,6 +68,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[2],
                     onCheckedChange = { disturbanceTypes[2] = !disturbanceTypes[2] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Schadhafte Fahrzeuge",
@@ -76,6 +83,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[3],
                     onCheckedChange = { disturbanceTypes[3] = !disturbanceTypes[3] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Gleisschäden",
@@ -89,6 +98,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[4],
                     onCheckedChange = { disturbanceTypes[4] = !disturbanceTypes[4] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Weichenstörungen",
@@ -102,6 +113,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[5],
                     onCheckedChange = { disturbanceTypes[5] = !disturbanceTypes[5] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Fahrleitungsgebrechen",
@@ -115,6 +128,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[6],
                     onCheckedChange = { disturbanceTypes[6] = !disturbanceTypes[6] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Signalstörungen",
@@ -128,6 +143,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[7],
                     onCheckedChange = { disturbanceTypes[7] = !disturbanceTypes[7] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Rettunseinsätze",
@@ -141,6 +158,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[8],
                     onCheckedChange = { disturbanceTypes[8] = !disturbanceTypes[8] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Polizeieinsätze",
@@ -154,6 +173,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[9],
                     onCheckedChange = { disturbanceTypes[9] = !disturbanceTypes[9] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Feuerwehreinsätze",
@@ -167,6 +188,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[10],
                     onCheckedChange = { disturbanceTypes[10] = !disturbanceTypes[10] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Falschparker",
@@ -180,6 +203,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[11],
                     onCheckedChange = { disturbanceTypes[11] = !disturbanceTypes[11] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Demonstrationen",
@@ -193,6 +218,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[12],
                     onCheckedChange = { disturbanceTypes[12] = !disturbanceTypes[12] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(10.dp)
                 )
                 Text(
                     text = "Veranstaltungen",
@@ -206,6 +233,8 @@ fun DisturbanceTypeFilters(
                     checked = disturbanceTypes[13],
                     onCheckedChange = { disturbanceTypes[13] = !disturbanceTypes[13] },
                     modifier = Modifier.align(Alignment.CenterVertically)
+                        .size(20.dp)
+                        .padding(20.dp)
                 )
                 Text(
                     text = "Sonstige",

@@ -2,7 +2,6 @@ package com.example.wls_android.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,8 +22,13 @@ fun DisturbanceLineFilters(
     disturbanceLines: SnapshotStateList<LineStatePair>,
     modifier: Modifier = Modifier
 ) {
+    val busList = disturbanceLines.toList().filter { it.line.type == 0 } //3
+    val tramList = disturbanceLines.toList().filter { it.line.type == 1 } //2
+    val metroList = disturbanceLines.toList().filter { it.line.type == 2 } //1
+    val miscList = disturbanceLines.toList().filter { it.line.type == 3 } //4
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Linien",
@@ -72,23 +77,25 @@ fun DisturbanceLineFilters(
                 Text(text = "Alle abwählen")
             }
         }
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-            disturbanceLines.forEachIndexed { index, element ->
-                val line = element.line
-                val enabled = element.enabled
-                LineIcon(
-                    modifier = Modifier.padding(5.dp),
-                    line = line,
-                    enabledState = !enabled,
-                    onClick = {
-                        disturbanceLines[index] = disturbanceLines[index].copy(enabled = !enabled)
-                    }
-                )
-            }
-        }
+        ListLines(
+            title = "U-Bahnen",
+            lineList = metroList,
+            stateList = disturbanceLines
+        )
+        ListLines(
+            title = "Straßenbahnen",
+            lineList = tramList,
+            stateList = disturbanceLines
+        )
+        ListLines(
+            title = "Busse",
+            lineList = busList,
+            stateList = disturbanceLines
+        )
+        ListLines(
+            title = "Sonstiges",
+            lineList = miscList,
+            stateList = disturbanceLines
+        )
     }
 }

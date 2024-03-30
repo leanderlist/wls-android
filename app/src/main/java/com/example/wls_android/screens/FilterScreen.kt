@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
@@ -18,6 +20,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -37,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceLineFilters
@@ -137,7 +140,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
     if (!filterData.filters.isEmpty()) {
 
         //parse enabled lines
-        var lineList = filterData.filters["line"]?.split(",")?.toMutableList()
+        val lineList = filterData.filters["line"]?.split(",")?.toMutableList()
         Log.e("awhawg", lineList.toString())
         if (lineList != null) {
             lineStateList.forEachIndexed { index, pair ->
@@ -185,8 +188,19 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                     titleContentColor = Color.White
                 ),
                 title = {
-                    Text(text = "WLS")
+                    Text(text = "Filter")
                 },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
         }
     ) {
@@ -197,13 +211,6 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                 .navigationBarsPadding()
         ) {
             item {
-                Text(
-                    text = "Filter",
-                    fontSize = 30.sp,
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .padding(top = 10.dp)
-                )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

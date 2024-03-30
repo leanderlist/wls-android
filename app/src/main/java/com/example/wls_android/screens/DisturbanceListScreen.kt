@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -197,7 +197,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.Filter.route) }) {
                         Icon(
-                            imageVector = Icons.Filled.Menu,
+                            imageVector = Icons.Filled.FilterAlt,
                             contentDescription = "Localized description",
                             tint = Color.White
                         )
@@ -212,7 +212,8 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState
+                sheetState = sheetState,
+                containerColor = Color.White
             ) {
                 if (sheetDisturbance != null) {
                     val initialDate = sheetDisturbance!!.start_time.substring(0, 10)

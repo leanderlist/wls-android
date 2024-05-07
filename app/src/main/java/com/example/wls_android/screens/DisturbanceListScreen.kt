@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -188,6 +189,15 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
     }
 
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate(Screen.Filter.route) }) {
+                Icon(
+                    imageVector = Icons.Filled.FilterAlt,
+                    contentDescription = "Localized description",
+                    tint = Color.White
+                )
+            }                       
+        },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -198,7 +208,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                     Text(text = "WLS")
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Filter.route) }) {
+                    IconButton(onClick = { navController.navigate(Screen.Filter.route) }) { //TODO
                         Icon(
                             imageVector = Icons.Filled.FilterAlt,
                             contentDescription = "Localized description",

@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">wls-android</string>
+    <string name="disturbance_service_description">Sendet eine Benachrichtigung, wenn eine Störung auftritt.</string>
+    <string name="channel_name">disturbance_notification_channel</string>
+    <string name="channel_description">Channel for disturbance notifications</string>
 </resources>

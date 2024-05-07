@@ -1,5 +1,6 @@
 package com.example.wls_android
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import com.example.compose.WlsAndroidTheme
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
+import com.example.wls_android.service.DisturbanceService
 import com.example.wls_android.viewmodel.FilterData
 
 
@@ -62,5 +64,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        stopService(Intent(this, DisturbanceService::class.java))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        startForegroundService(Intent(this, DisturbanceService::class.java))
     }
 }

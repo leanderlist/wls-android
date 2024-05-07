@@ -7,6 +7,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.wls_android.MainActivity
 import com.example.wls_android.R
@@ -26,20 +27,21 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class DisturbanceService : Service() {
-    private var newDisturbances = mutableListOf<Disturbance>()
+    private var trackedDisturbances = mutableListOf<Disturbance>()
     private lateinit var client: HttpClient
     private var job: Job? = null
 
     override fun onCreate() {
         super.onCreate()
         client = getKtorClient("/api/disturbances")
+        Log.e("DisturbanceService", "Service created")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 checkForNewDisturbances()
-                delay(300000) // Warte 5 Minuten
+                delay(180000)
             }
         }
         return START_REDELIVER_INTENT
@@ -59,21 +61,24 @@ class DisturbanceService : Service() {
             }
         }
         val body = response.body<Data>()
-
-        // if one of the disturbances is new, send a notification
+        // Log.e("DisturbanceService", "Checking for new disturbances: ${body.data.size}")
         for (disturbance in body.data) {
-            if (isNewDisturbance(disturbance)) {
+            if (!isTrackedDisturbance(disturbance) && isActiveDisturbance(disturbance)) {
+                trackedDisturbances.add(disturbance)
                 sendNotification(disturbance)
+            }
+            if (isTrackedDisturbance(disturbance) && !isActiveDisturbance(disturbance)) {
+                trackedDisturbances.remove(disturbance)
             }
         }
     }
 
-    private fun isNewDisturbance(disturbance: Disturbance): Boolean {
-        if (newDisturbances.none { it.id == disturbance.id }) {
-            newDisturbances.add(disturbance)
-            return true
-        }
-        return false
+    private fun isTrackedDisturbance(disturbance: Disturbance): Boolean {
+        return trackedDisturbances.any { it.id == disturbance.id }
+    }
+
+    private fun isActiveDisturbance(disturbance: Disturbance): Boolean {
+        return disturbance.end_time == null
     }
 
     private fun sendNotification(disturbance: Disturbance) {
@@ -85,19 +90,25 @@ class DisturbanceService : Service() {
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
+        val fullScreenIntent = Intent(this, FullScreenActivity::class.java)
+        val fullScreenPendingIntent = PendingIntent.getActivity(this, 0,
+            fullScreenIntent, PendingIntent.FLAG_IMMUTABLE)
+
         val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_background) // TODO: Icon anpassen
+            .setSmallIcon(R.drawable.train)
             .setContentTitle("Neue Störung")
             .setContentText(disturbance.title)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
+            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setColor(0xFFC0000F.toInt())
             .setAutoCancel(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val name = getString(R.string.channel_name)
         val descriptionText = getString(R.string.channel_description)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(channelId, name, importance).apply {
             description = descriptionText
         }
@@ -112,6 +123,6 @@ class DisturbanceService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        job?.cancel() // Stellen Sie sicher, dass der Job beendet wird, wenn der Service zerstört wird
+        job?.cancel()
     }
 }

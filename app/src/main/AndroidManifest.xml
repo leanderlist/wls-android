@@ -16,7 +16,7 @@
         <service
             android:name=".service.DisturbanceService"
             android:exported="false"
-            android:description="Sendet eine Benachrichtigung, wenn eine Störung auftritt." />
+            android:description="@string/disturbance_service_description" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,10 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Wlsandroid"
         tools:targetApi="31">
+        <service
+            android:name=".service.DisturbanceService"
+            android:exported="false"
+            android:description="Sendet eine Benachrichtigung, wenn eine Störung auftritt." />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Wlsandroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

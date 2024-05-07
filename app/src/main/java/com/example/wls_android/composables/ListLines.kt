@@ -22,7 +22,7 @@ fun ListLines(title : String, lineList : List<LineStatePair>, stateList : Snapsh
         textAlign = TextAlign.Start,
         fontSize = 20.sp,
         modifier = Modifier.padding(top = 5.dp)
-            .padding(horizontal = 25.dp)
+            .padding(horizontal = 10.dp)
             .fillMaxWidth()
     )
     FlowRow(

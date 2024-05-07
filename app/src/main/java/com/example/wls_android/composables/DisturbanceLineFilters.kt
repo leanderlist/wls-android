@@ -33,17 +33,19 @@ fun DisturbanceLineFilters(
         Text(
             text = "Linien",
             fontSize = 20.sp,
-            modifier = Modifier.padding(horizontal = 10.dp)
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 10.dp)
+
         )
         Row(
             modifier = Modifier
+                .padding(vertical = 5.dp, horizontal = 10.dp)
                 .fillMaxWidth()
-                .padding(vertical = 5.dp)
         ) {
             Button(
                 modifier = Modifier
                     .weight(1F)
-                    .padding(end = 1.dp, start = 10.dp),
+                    .padding(end = 1.dp),
                 onClick = {
                     disturbanceLines.forEachIndexed { index, element ->
                         disturbanceLines[index] = element.copy(enabled = true)
@@ -61,7 +63,7 @@ fun DisturbanceLineFilters(
             Button(
                 modifier = Modifier
                     .weight(1F)
-                    .padding(start = 1.dp, end = 10.dp),
+                    .padding(start = 1.dp),
                 onClick = {
                     disturbanceLines.forEachIndexed { index, element ->
                         disturbanceLines[index] = element.copy(enabled = false)

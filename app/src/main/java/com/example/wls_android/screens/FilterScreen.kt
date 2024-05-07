@@ -5,10 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -61,10 +64,6 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterScreen(navController: NavHostController, filterData: FilterData) {
-
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
 
     var active by remember {
         mutableStateOf(false)
@@ -215,20 +214,24 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp)
+                        .padding(top = 15.dp, bottom = 10.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = null
+                        ) { active = !active }
                 ) {
                     Checkbox(
                         checked = active,
                         onCheckedChange = { active = !active },
-                        modifier = Modifier.align(Alignment.CenterVertically),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .size(20.dp)
                     )
+                    Spacer(Modifier.width(10.dp))
                     Text(
                         text = "Nur offene Störungen anzeigen",
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .clickable(
-                                indication = null,
-                                interactionSource = interactionSource
-                            ) { active = !active }
                     )
                 }
                 ExposedDropdownMenuBox(
@@ -388,7 +391,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp),
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
                     onClick = {
                         filterData.resetFilters()
 

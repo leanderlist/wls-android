@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -272,33 +275,44 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                             ),
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
-                        Text(
-                            text = "Beschreibung:",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            text = descriptions[0].description,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-                        for (i in 1 until descriptions.size) {
-                            val descriptionDate =
-                                descriptions[i].time.substring(0, descriptions[i].time.indexOf('.'))
+                        HorizontalDivider(Modifier.padding(bottom = 10.dp))
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .weight(weight = 1f, fill = false)
+                        ) {
 
-                            if (initialDate.equals(descriptionDate.substring(0, 10))) {
-                                Text(
-                                    text = "Update: ${formatStringDate(descriptionDate, 3)}",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 20.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Update: ${formatStringDate(descriptionDate, 1)}",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 20.sp
-                                )
+                            Text(
+                                text = "Beschreibung:",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = descriptions[0].description,
+                                modifier = Modifier.padding(bottom = 10.dp)
+                            )
+                            for (i in 1 until descriptions.size) {
+                                val descriptionDate =
+                                    descriptions[i].time.substring(
+                                        0,
+                                        descriptions[i].time.indexOf('.')
+                                    )
+
+                                if (initialDate.equals(descriptionDate.substring(0, 10))) {
+                                    Text(
+                                        text = "Update: ${formatStringDate(descriptionDate, 3)}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Update: ${formatStringDate(descriptionDate, 1)}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp
+                                    )
+                                }
+                                Text(text = descriptions[i].description)
                             }
-                            Text(text = descriptions[i].description)
                         }
                     }
                 }

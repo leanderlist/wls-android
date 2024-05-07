@@ -213,7 +213,6 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 sheetState = sheetState,
-                containerColor = Color.White
             ) {
                 if (sheetDisturbance != null) {
                     val initialDate = sheetDisturbance!!.start_time.substring(0, 10)

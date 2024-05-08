@@ -5,4 +5,5 @@ sealed class Screen(
 ) {
     object DisturbanceList : Screen("disturbance_list")
     object Filter : Screen("filter")
+    object Settings : Screen("settings")
 }

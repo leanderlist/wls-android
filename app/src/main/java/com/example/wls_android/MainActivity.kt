@@ -1,10 +1,8 @@
 package com.example.wls_android
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,10 +20,10 @@ import com.example.compose.WlsAndroidTheme
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
+import com.example.wls_android.screens.SettingsScreen
 import com.example.wls_android.worker.DisturbanceWorker
 import com.example.wls_android.viewmodel.FilterData
 import java.util.concurrent.TimeUnit
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +62,17 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             FilterScreen(navController = navController, filterData = sharedViewModel)
+                        }
+                        composable(
+                            route = Screen.Settings.route,
+                            enterTransition = {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(400)
+                                )
+                            }
+                        ) {
+                            SettingsScreen(navController = navController)
                         }
                     }
                 }

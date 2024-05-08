@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -193,7 +194,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             FloatingActionButton(onClick = { navController.navigate(Screen.Filter.route) }) {
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,
-                    contentDescription = "Localized description",
+                    contentDescription = "Open Filter screen",
                     tint = Color.White
                 )
             }                       
@@ -208,10 +209,10 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                     Text(text = "WLS")
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Filter.route) }) { //TODO
+                    IconButton(onClick = { navController.navigate(Screen.Settings.route) }) { // TODO
                         Icon(
-                            imageVector = Icons.Filled.FilterAlt,
-                            contentDescription = "Localized description",
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Open Settings",
                             tint = Color.White
                         )
                     }
@@ -266,7 +267,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                             ) {
                                 Icon(
                                     Icons.Filled.Share,
-                                    contentDescription = "Favorite",
+                                    contentDescription = "Share disturbance",
                                     tint = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.size(24.dp)
                                 )

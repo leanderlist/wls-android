@@ -1,9 +1,10 @@
 package com.example.wls_android
 
-import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,12 +15,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.work.Constraints
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.compose.WlsAndroidTheme
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
-import com.example.wls_android.service.DisturbanceService
+import com.example.wls_android.worker.DisturbanceWorker
 import com.example.wls_android.viewmodel.FilterData
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : ComponentActivity() {
@@ -68,11 +73,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        stopService(Intent(this, DisturbanceService::class.java))
+        WorkManager.getInstance(applicationContext).cancelAllWorkByTag("disturbanceWorker")
     }
 
-    override fun onPause() {
-        super.onPause()
-        startForegroundService(Intent(this, DisturbanceService::class.java))
+    override fun onStop() {
+        super.onStop()
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+            .build()
+        val workRequest = PeriodicWorkRequestBuilder<DisturbanceWorker>(5, TimeUnit.MINUTES)
+            .addTag("disturbanceWorker")
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(this).enqueue(workRequest)
     }
 }

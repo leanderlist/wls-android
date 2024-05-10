@@ -8,17 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.wls_android.MainActivity
@@ -27,12 +20,13 @@ import com.example.wls_android.data.Data
 import com.example.wls_android.data.Disturbance
 import com.example.wls_android.data.getKtorClient
 import com.google.gson.Gson
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
@@ -49,12 +43,8 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
         Log.e("DisturbanceWorker", "get: $trackedDisturbances")
         // sharedPreferences.edit().clear().apply()
         return withContext(Dispatchers.IO) {
-            try {
-                checkForNewDisturbances()
-                Result.success()
-            } catch (e: Exception) {
-                Result.failure()
-            }
+            checkForNewDisturbances()
+            Result.success()
         }
     }
 
@@ -122,6 +112,11 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             applicationContext, 0, intent,
             PendingIntent.FLAG_IMMUTABLE
         )
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val dateTime = LocalDateTime.parse(disturbance.start_time, formatter)
+        val whenMillis = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
         val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.train)
             .setContentTitle("Neue Störung")
@@ -130,6 +125,7 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setWhen(whenMillis)
 
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,

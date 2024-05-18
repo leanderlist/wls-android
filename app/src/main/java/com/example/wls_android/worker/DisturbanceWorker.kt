@@ -31,10 +31,13 @@ import java.time.format.DateTimeFormatter
 
 class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
+    companion object {
+        const val WORKER_TAG = "disturbanceWorker"
+    }
 
     private val gson = Gson()
     private val sharedPreferences: SharedPreferences =
-        appContext.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
+        appContext.getSharedPreferences("WLS-App", Context.MODE_PRIVATE)
     private val trackedDisturbances = sharedPreferences.getStringSet("trackedDisturbances", setOf())
         ?.map { gson.fromJson(it, Disturbance::class.java) }?.toMutableList() ?: mutableListOf()
     private val client = getKtorClient("/api/disturbances")
@@ -74,7 +77,8 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
         sharedPreferences.edit().apply {
             putStringSet(
                 "trackedDisturbances",
-                trackedDisturbances.filter { isActiveDisturbance(it) }.map { gson.toJson(it) }.toSet()
+                trackedDisturbances.filter { isActiveDisturbance(it) }.map { gson.toJson(it) }
+                    .toSet()
             )
             apply()
         }

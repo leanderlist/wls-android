@@ -43,7 +43,7 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
     private val client = getKtorClient("/api/disturbances")
 
     override suspend fun doWork(): Result {
-        Log.e("DisturbanceWorker", "get: $trackedDisturbances")
+        // Log.e("DisturbanceWorker", "get: $trackedDisturbances")
         // sharedPreferences.edit().clear().apply()
         return withContext(Dispatchers.IO) {
             checkForNewDisturbances()
@@ -52,6 +52,7 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
     }
 
     private suspend fun checkForNewDisturbances() {
+        val selectedLines = inputData.getStringArray("selectedLines")?.toList()
         val response = client.get {
             url {
                 parameters.append(
@@ -62,7 +63,12 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
                     "to",
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 )
+                if (selectedLines != null) {
+                    Log.e("DisturbanceWorker", "selectedLines: $selectedLines")
+                    // parameters.append("selectedLines", selectedLines.toString())
+                }
             }
+            Log.e("DisturbanceWorker", "url: $url")
         }
         val body = response.body<Data>()
         for (disturbance in body.data) {
@@ -83,7 +89,7 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             apply()
         }
         // sharedPreferences.edit().clear().apply()
-        Log.e("DisturbanceWorker", "set: $trackedDisturbances")
+        // Log.e("DisturbanceWorker", "set: $trackedDisturbances")
     }
 
     private fun isTrackedDisturbance(disturbance: Disturbance): Boolean {
@@ -143,21 +149,4 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             // TODO: Case wenn keine Berechtigung für Benachrichtigungen
         }
     }
-
-//    private fun getBitmapFromVectorDrawable(drawableId: Int): Bitmap {
-//        val drawable = ContextCompat.getDrawable(applicationContext, drawableId)
-//        return if (drawable is BitmapDrawable) {
-//            drawable.bitmap
-//        } else {
-//            val bitmap = Bitmap.createBitmap(
-//                drawable!!.intrinsicWidth,
-//                drawable.intrinsicHeight,
-//                Bitmap.Config.ARGB_8888
-//            )
-//            val canvas = Canvas(bitmap)
-//            drawable.setBounds(0, 0, canvas.width, canvas.height)
-//            drawable.draw(canvas)
-//            bitmap
-//        }
-//    }
 }

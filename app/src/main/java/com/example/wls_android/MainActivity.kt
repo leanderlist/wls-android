@@ -1,9 +1,6 @@
 package com.example.wls_android
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -19,8 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.compose.WlsAndroidTheme
-import com.example.wls_android.model.LineStatePair
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
@@ -28,11 +25,10 @@ import com.example.wls_android.screens.SettingsScreen
 import com.example.wls_android.worker.DisturbanceWorker
 import com.example.wls_android.viewmodel.FilterData
 import com.example.wls_android.viewmodel.SettingsData
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
+    private lateinit var settingsViewModel : SettingsData
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -43,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     val sharedViewModel : FilterData = viewModel()
-                    val settingsViewModel : SettingsData = viewModel()
+                    settingsViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -98,26 +94,12 @@ class MainActivity : ComponentActivity() {
         startNotificationWorker()
     }
 
-    private fun setSettingsData(settingsViewModel: SettingsData) {
-        val sharedPreferences = getSharedPreferences("WLS-App", Context.MODE_PRIVATE)
-        val json = sharedPreferences.getString("settingsData", "")
-        Log.d("MainActivity", "Retrieved JSON: $json")
-        if (!json.isNullOrEmpty()) {
-            val gson = Gson()
-            val type = object : TypeToken<List<LineStatePair>>() {}.type
-            val data = gson.fromJson<List<LineStatePair>>(json, type)
-            Log.d("MainActivity", "Converted data: $data")
-            settingsViewModel.selectedLines.addAll(data)
-        }
+    private fun setSettingsData() {
+        // TODO
     }
 
-    private fun saveSettingsData(settingsViewModel: SettingsData) {
-        val sharedPreferences = getSharedPreferences("WLS-App", Context.MODE_PRIVATE)
-        val editor: SharedPreferences.Editor = sharedPreferences.edit()
-        val gson = Gson()
-        val json = gson.toJson(settingsViewModel.selectedLines)
-        editor.putString("settingsData", json)
-        editor.apply()
+    private fun saveSettingsData() {
+        // TODO
     }
 
     private fun stopNotificationWorker() {
@@ -134,6 +116,10 @@ class MainActivity : ComponentActivity() {
             .build()
         val workRequest = PeriodicWorkRequestBuilder<DisturbanceWorker>(15, TimeUnit.MINUTES)
             .addTag(DisturbanceWorker.WORKER_TAG)
+            .setInputData(
+                workDataOf(
+                    "selectedLines" to settingsViewModel.selectedLines.filter { it.enabled }.map { it.line.id }.toTypedArray()
+                ))
             .setConstraints(constraints)
             .build()
         WorkManager.getInstance(this).enqueue(workRequest)

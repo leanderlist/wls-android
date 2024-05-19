@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel : SettingsData
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setSettingsData()
+        settingsViewModel = ViewModelProvider(this)[SettingsData::class.java]
         setContent {
             WlsAndroidTheme {
                 Surface(
@@ -42,7 +43,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     val sharedViewModel : FilterData = viewModel()
-                    settingsViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -90,6 +90,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         stopNotificationWorker()
+        setSettingsData()
     }
 
     override fun onStop() {

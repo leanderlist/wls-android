@@ -82,22 +82,26 @@ fun DisturbanceLineFilters(
         ListLines(
             title = "U-Bahnen",
             lineList = metroList,
-            stateList = disturbanceLines
+            stateList = disturbanceLines,
+            type = 2
         )
         ListLines(
             title = "Straßenbahnen",
             lineList = tramList,
-            stateList = disturbanceLines
+            stateList = disturbanceLines,
+            type = 1
         )
         ListLines(
             title = "Busse",
             lineList = busList,
-            stateList = disturbanceLines
+            stateList = disturbanceLines,
+            type = 0
         )
         ListLines(
             title = "Sonstiges",
             lineList = miscList,
-            stateList = disturbanceLines
+            stateList = disturbanceLines,
+            type = 3
         )
     }
 }

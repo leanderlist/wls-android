@@ -65,8 +65,9 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 )
                 if (selectedLines != null) {
-                    Log.e("DisturbanceWorker", "selectedLines: $selectedLines")
-                    // parameters.append("selectedLines", selectedLines.toString())
+                    for (line in selectedLines) {
+                        parameters.append("lines", line)
+                    }
                 }
             }
             Log.e("DisturbanceWorker", "url: $url")

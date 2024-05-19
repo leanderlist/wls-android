@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         stopNotificationWorker()
-        setSettingsData()
+        // setSettingsData()
     }
 
     override fun onStop() {

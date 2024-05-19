@@ -18,6 +18,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.compose.WlsAndroidTheme
+import com.example.wls_android.model.LineStatePair
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
@@ -25,12 +26,14 @@ import com.example.wls_android.screens.SettingsScreen
 import com.example.wls_android.worker.DisturbanceWorker
 import com.example.wls_android.viewmodel.FilterData
 import com.example.wls_android.viewmodel.SettingsData
+import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel : SettingsData
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setSettingsData()
         setContent {
             WlsAndroidTheme {
                 Surface(
@@ -92,14 +95,23 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         startNotificationWorker()
+        saveSettingsData()
     }
 
     private fun setSettingsData() {
-        // TODO
+        val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
+        val selectedLines = sharedPref.getString("selectedLines", "[]")
+        settingsViewModel.selectedLines = selectedLines?.let {
+            Gson().fromJson(it, Array<LineStatePair>::class.java).toMutableList()
+        } ?: mutableListOf()
     }
 
     private fun saveSettingsData() {
-        // TODO
+        val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putString("selectedLines", settingsViewModel.selectedLines.toString())
+            apply()
+        }
     }
 
     private fun stopNotificationWorker() {

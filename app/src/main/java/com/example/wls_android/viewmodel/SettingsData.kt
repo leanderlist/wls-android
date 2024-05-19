@@ -6,7 +6,6 @@ import com.example.wls_android.model.LineStatePair
 
 class SettingsData : ViewModel() {
     var selectedLines = mutableListOf<LineStatePair>()
-        private set
 
     fun addLine(line: LineStatePair) {
         selectedLines.add(line)

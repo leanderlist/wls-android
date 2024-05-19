@@ -37,6 +37,12 @@ fun DisturbanceCard(
 
     val lines = disturbance.lines
     val title = disturbance.title
+    val index = title.indexOf(':')
+    val text = if (index != -1 && index + 2 < title.length) { // TODO: vllt Variable umbennen, keine Ahnung was das ist?
+        title.substring(index + 2, title.length)
+    } else {
+        title
+    }
 
     OutlinedCard(
         colors = CardDefaults.cardColors(
@@ -64,7 +70,7 @@ fun DisturbanceCard(
                 }
             }
             Text(
-                text = title.substring(title.indexOf(':') + 2, title.length),
+                text = text,
                 modifier = Modifier
                     .padding(start = 5.dp)
                     .fillMaxWidth(),

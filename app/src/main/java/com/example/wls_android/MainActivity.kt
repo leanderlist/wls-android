@@ -28,6 +28,7 @@ import com.example.wls_android.worker.DisturbanceWorker
 import com.example.wls_android.viewmodel.FilterData
 import com.example.wls_android.viewmodel.SettingsData
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -90,7 +91,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         stopNotificationWorker()
-        // setSettingsData()
+        setSettingsData()
     }
 
     override fun onStop() {
@@ -102,15 +103,25 @@ class MainActivity : ComponentActivity() {
     private fun setSettingsData() {
         val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
         val selectedLines = sharedPref.getString("selectedLines", "[]")
-        settingsViewModel.selectedLines = selectedLines?.let {
-            Gson().fromJson(it, Array<LineStatePair>::class.java).toMutableList()
-        } ?: mutableListOf()
+        if (selectedLines?.let { isValidJsonArray(it) } == true) {
+            settingsViewModel.selectedLines = Gson().fromJson(selectedLines, Array<LineStatePair>::class.java).toMutableList()
+        } else {
+            settingsViewModel.selectedLines = mutableListOf()
+        }
+    }
+
+    private fun isValidJsonArray(json: String): Boolean {
+        return try {
+            Gson().fromJson(json, Any::class.java) is List<*>
+        } catch (ex: JsonSyntaxException) {
+            false
+        }
     }
 
     private fun saveSettingsData() {
         val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
-        with (sharedPref.edit()) {
-            putString("selectedLines", settingsViewModel.selectedLines.toString())
+        with(sharedPref.edit()) {
+            putString("selectedLines", Gson().toJson(settingsViewModel.selectedLines))
             apply()
         }
     }

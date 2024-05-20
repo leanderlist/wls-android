@@ -1,5 +1,6 @@
 package com.example.wls_android.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,7 @@ import com.example.wls_android.model.LineStatePair
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ListLines(title : String, lineList : List<LineStatePair>, stateList : SnapshotStateList<LineStatePair>) {
+fun ListLines(title : String, lineList : List<LineStatePair>, stateList : SnapshotStateList<LineStatePair>, type: Int) {
     Text(
         text = title,
         textAlign = TextAlign.Start,
@@ -24,6 +25,13 @@ fun ListLines(title : String, lineList : List<LineStatePair>, stateList : Snapsh
         modifier = Modifier.padding(top = 5.dp)
             .padding(horizontal = 10.dp)
             .fillMaxWidth()
+            .clickable {
+                stateList.forEachIndexed { index, element ->
+                    if (element.line.type == type) {
+                        stateList[index] = element.copy(enabled = !element.enabled)
+                    }
+                }
+            }
     )
     FlowRow(
         modifier = Modifier.wrapContentSize()

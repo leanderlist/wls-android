@@ -37,4 +37,13 @@ class SettingsData : ViewModel() {
         }
         return false
     }
+
+    fun hasNoEnabledLines(): Boolean {
+        for (lineStatePair in selectedLines) {
+            if (lineStatePair.enabled) {
+                return false
+            }
+        }
+        return true
+    }
 }

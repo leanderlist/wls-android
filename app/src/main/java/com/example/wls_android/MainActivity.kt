@@ -1,6 +1,7 @@
 package com.example.wls_android
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -131,6 +132,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startNotificationWorker() {
+        if (settingsViewModel.hasNoEnabledLines()) {
+            // Log.d("MainActivity", "No enabled lines, not starting worker")
+            return
+        }
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
             .setRequiresBatteryNotLow(false)

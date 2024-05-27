@@ -18,7 +18,7 @@ import androidx.work.Constraints
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.example.compose.WlsAndroidTheme
+import com.example.wls_android.ui.theme.WlsAndroidTheme
 import com.example.wls_android.model.LineStatePair
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen

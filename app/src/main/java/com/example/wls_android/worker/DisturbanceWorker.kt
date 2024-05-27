@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -129,13 +128,11 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
         val dateTime = LocalDateTime.parse(disturbance.start_time, formatter)
         val whenMillis = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-        val largeIcon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.train)
         val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.train)
-            .setLargeIcon(largeIcon)
+            .setColor(0xFFC0000F.toInt())
             .setContentTitle("Neue Störung")
             .setContentText(disturbance.title)
-            .setColor(0xFFC0000F.toInt())
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

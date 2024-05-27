@@ -119,9 +119,10 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("disturbanceId", disturbance.id)
         }
+
         val pendingIntent = PendingIntent.getActivity(
-            applicationContext, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
+            applicationContext, notificationId, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

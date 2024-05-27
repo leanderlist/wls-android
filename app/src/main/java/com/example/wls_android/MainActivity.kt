@@ -1,7 +1,6 @@
 package com.example.wls_android
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -34,6 +33,7 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel : SettingsData
+    private var notificationAlreadyOpened = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         settingsViewModel = ViewModelProvider(this)[SettingsData::class.java]
@@ -59,7 +59,12 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) {
-                            DisturbanceListScreen(navController = navController, filterData = sharedViewModel)
+                            val openFromNotificationId: String? = if (!notificationAlreadyOpened) {
+                                intent.getStringExtra("disturbanceId")?.also { notificationAlreadyOpened = true }
+                            } else {
+                                null
+                            }
+                            DisturbanceListScreen(navController = navController, filterData = sharedViewModel, disturbanceIdToOpen = openFromNotificationId)
                         }
                         composable(
                             route = Screen.Filter.route,

@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -65,12 +64,11 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 )
                 if (selectedLines != null) {
-                    for (line in selectedLines) {
-                        parameters.append("lines", line)
-                    }
+                    parameters.append("line", selectedLines.joinToString(",")
+                    )
                 }
             }
-            Log.e("DisturbanceWorker", "url: $url")
+            // Log.e("DisturbanceWorker", "url: $url")
         }
         val body = response.body<Data>()
         for (disturbance in body.data) {
@@ -119,6 +117,7 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("disturbanceId", disturbance.id)
         }
         val pendingIntent = PendingIntent.getActivity(
             applicationContext, 0, intent,

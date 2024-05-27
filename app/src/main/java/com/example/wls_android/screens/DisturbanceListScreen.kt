@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -73,9 +74,10 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisturbanceListScreen(navController: NavHostController, filterData: FilterData) {
+fun DisturbanceListScreen(navController: NavHostController, filterData: FilterData, disturbanceIdToOpen: String?) {
 
     val context = LocalContext.current
+    val scrollState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember {
         mutableStateOf(false)
@@ -131,13 +133,9 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                 }
                 val body = response.body<Data>()
                 if (response.status.value in 200..299) {
-                    if (body != null) {
-                        disturbanceList.clear()
-                        disturbanceList.addAll(body.data)
-                        spinnerLoading = false
-                        errorMessage = ""
-                    } else
-                        errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
+                    disturbanceList.addAll(body.data)
+                    spinnerLoading = false
+                    errorMessage = ""
                     spinnerLoading = false
                 } else {
                     errorMessage = "Es sind keine Störungen vorhanden"
@@ -174,11 +172,19 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             }
             val body = response.body<Data>()
             if (response.status.value in 200..299) {
-                if (body != null) {
-                    disturbanceList.addAll(body.data)
-                } else
-                    errorMessage = "Keine Störungen passend zum gesetzten Filter gefunden"
+                disturbanceList.addAll(body.data)
                 spinnerLoading = false
+
+                // Open the sheet with the disturbance if disturbanceIdToOpen is not null
+                disturbanceIdToOpen?.let { disturbanceId ->
+                    val disturbance = disturbanceList.find { it.id == disturbanceId }
+                    if (disturbance != null) {
+                        sheetDisturbance = disturbance
+                        showBottomSheet = true
+                    } else {
+                        snackBarHost.showSnackbar("Störung nicht gefunden")
+                    }
+                }
             } else {
                 errorMessage = "Es sind keine Störungen vorhanden"
                 spinnerLoading = false
@@ -209,7 +215,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                     Text(text = "WLS")
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Settings.route) }) { // TODO
+                    IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Open Settings",
@@ -349,6 +355,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                         .align(Alignment.TopCenter)
                 )
             LazyColumn(
+                state = scrollState,
                 modifier = Modifier
                     .padding(it)
                     .padding(horizontal = 5.dp)

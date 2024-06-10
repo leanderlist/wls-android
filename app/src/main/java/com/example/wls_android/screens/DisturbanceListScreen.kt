@@ -133,6 +133,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                 }
                 val body = response.body<Data>()
                 if (response.status.value in 200..299) {
+                    disturbanceList.clear()
                     disturbanceList.addAll(body.data)
                     spinnerLoading = false
                     errorMessage = ""
@@ -182,7 +183,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                         sheetDisturbance = disturbance
                         showBottomSheet = true
                     } else {
-                        snackBarHost.showSnackbar("Störung nicht gefunden")
+                        snackBarHost.showSnackbar("Gewählte Störung nicht gefunden")
                     }
                 }
             } else {

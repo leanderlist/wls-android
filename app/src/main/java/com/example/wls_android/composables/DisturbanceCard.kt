@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,15 +47,12 @@ fun DisturbanceCard(
         title
     }
 
-    OutlinedCard(
+    Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground),
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(5.dp),
+        modifier = modifier.fillMaxWidth()
+            .wrapContentHeight()
     ) {
         Column(
             modifier = Modifier
@@ -75,7 +75,8 @@ fun DisturbanceCard(
                     .padding(start = 5.dp)
                     .fillMaxWidth(),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = getDateText(startTime, endTime),
@@ -83,6 +84,7 @@ fun DisturbanceCard(
                     .padding(start = 5.dp)
                     .fillMaxWidth(),
                 fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
                 //fontWeight = FontWeight.Bold
             )
         }

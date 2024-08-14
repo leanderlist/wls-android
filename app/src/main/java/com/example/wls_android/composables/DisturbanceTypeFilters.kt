@@ -8,14 +8,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowLeft
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wls_android.R
 
 @Composable
 fun DisturbanceTypeFilters(
@@ -40,18 +54,54 @@ fun DisturbanceTypeFilters(
         "Sonstige"
     )
 
+    val showTypes = remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
+        Card(
+            onClick = { showTypes.value = !showTypes.value },
+            modifier = Modifier.padding(top = 5.dp)
+                .padding(horizontal = 10.dp)
+        ) {
+            Row(
+                //modifier = Modifier.clip(RoundedCornerShape(10.dp))
+            ) {
+                Text(
+                    text = "Störungstypen",
+                    textAlign = TextAlign.Start,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .padding(end = 10.dp)
+                        .wrapContentWidth()
+                        .align(Alignment.CenterVertically)
 
-        Text(
-            text = "Störungstypen",
-            fontSize = 20.sp,
-            modifier = Modifier.padding(horizontal = 10.dp)
-        )
-        Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-            for(i in 0..13) {
-                DisturbanceType(label = typeTexts[i], checked = disturbanceTypes[i])
+                )
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .weight(1F)
+                )
+                Icon(
+                    Icons.Rounded.ArrowLeft,
+                    contentDescription = stringResource(R.string.app_name),
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .align(Alignment.CenterVertically)
+                )
+            }
+        }
+
+        if(showTypes.value) {
+            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                for (i in 0..13) {
+                    DisturbanceType(label = typeTexts[i], checked = disturbanceTypes[i])
+                }
             }
         }
 
@@ -64,8 +114,9 @@ fun DisturbanceType(
     checked : MutableState<Boolean>
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 5.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp, horizontal = 10.dp)
             .clickable(
                 interactionSource = null,
                 indication = null

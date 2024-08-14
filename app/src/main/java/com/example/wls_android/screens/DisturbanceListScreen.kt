@@ -209,7 +209,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.main_color),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = Color.White
                 ),
                 title = {
@@ -220,7 +220,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Open Settings",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

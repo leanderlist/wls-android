@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
@@ -18,15 +17,15 @@ import androidx.work.Constraints
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.example.wls_android.ui.theme.AppTheme
 import com.example.wls_android.model.LineStatePair
 import com.example.wls_android.navigation.Screen
 import com.example.wls_android.screens.DisturbanceListScreen
 import com.example.wls_android.screens.FilterScreen
 import com.example.wls_android.screens.SettingsScreen
-import com.example.wls_android.worker.DisturbanceWorker
+import com.example.wls_android.ui.theme.AppTheme
 import com.example.wls_android.viewmodel.FilterData
 import com.example.wls_android.viewmodel.SettingsData
+import com.example.wls_android.worker.DisturbanceWorker
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit

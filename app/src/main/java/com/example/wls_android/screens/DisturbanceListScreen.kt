@@ -203,8 +203,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             FloatingActionButton(onClick = { navController.navigate(Screen.Filter.route) }) {
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,
-                    contentDescription = "Open Filter screen",
-                    tint = Color.White
+                    contentDescription = "Open Filter screen"
                 )
             }                       
         },
@@ -260,7 +259,6 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                                 Icon(
                                     Icons.Filled.Share,
                                     contentDescription = "Share disturbance",
-                                    tint = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -361,7 +359,6 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             }
             Text(
                 text = errorMessage,
-                color = Color.White,
                 modifier = Modifier
                     .zIndex(11F)
                     .align(Alignment.TopCenter)

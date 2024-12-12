@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 fun DescriptionCard(descriptions : List<Description>) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            //containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
     ) {
         Column(
@@ -48,7 +48,7 @@ fun DescriptionCard(descriptions : List<Description>) {
                     if(time != null) {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.background
+                                // containerColor = MaterialTheme.colorScheme.background
                             ),
                             modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)
                         ) {
@@ -58,7 +58,7 @@ fun DescriptionCard(descriptions : List<Description>) {
                                 Text(
                                     text = "Update: $time",
                                     style = TextStyle(fontSize = 17.sp),
-                                    color = colorResource(id = R.color.main_color),
+                                    // color = colorResource(id = R.color.main_color),
                                 )
                                 Text(
                                     text = descriptions[i].description,

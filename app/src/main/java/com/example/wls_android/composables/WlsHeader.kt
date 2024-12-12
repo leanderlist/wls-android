@@ -34,7 +34,7 @@ fun WlsHeader(
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = "Open Settings",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    // tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         },

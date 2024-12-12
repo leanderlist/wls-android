@@ -49,7 +49,7 @@ fun DisturbanceCard(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+            // containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         ),
         modifier = modifier.fillMaxWidth()
             .wrapContentHeight()
@@ -76,7 +76,7 @@ fun DisturbanceCard(
                     .fillMaxWidth(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                // color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = getDateText(startTime, endTime),
@@ -84,7 +84,7 @@ fun DisturbanceCard(
                     .padding(start = 5.dp)
                     .fillMaxWidth(),
                 fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                // color = MaterialTheme.colorScheme.onSurface
                 //fontWeight = FontWeight.Bold
             )
         }

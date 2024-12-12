@@ -63,7 +63,8 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 )
                 if (selectedLines != null) {
-                    parameters.append("line", selectedLines.joinToString(",")
+                    parameters.append(
+                        "line", selectedLines.joinToString(",")
                     )
                 }
             }

@@ -1,15 +1,12 @@
 package com.example.wls_android
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,10 +29,9 @@ import com.example.wls_android.worker.DisturbanceWorker
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit
-import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
-    private lateinit var settingsViewModel : SettingsData
+    private lateinit var settingsViewModel: SettingsData
     private var notificationAlreadyOpened = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +42,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     val navController = rememberNavController()
-                    val sharedViewModel : FilterData = viewModel()
+                    val sharedViewModel: FilterData = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -62,11 +58,16 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             val openFromNotificationId: String? = if (!notificationAlreadyOpened) {
-                                intent.getStringExtra("disturbanceId")?.also { notificationAlreadyOpened = true }
+                                intent.getStringExtra("disturbanceId")
+                                    ?.also { notificationAlreadyOpened = true }
                             } else {
                                 null
                             }
-                            DisturbanceListScreen(navController = navController, filterData = sharedViewModel, disturbanceIdToOpen = openFromNotificationId)
+                            DisturbanceListScreen(
+                                navController = navController,
+                                filterData = sharedViewModel,
+                                disturbanceIdToOpen = openFromNotificationId
+                            )
                         }
                         composable(
                             route = Screen.Filter.route,
@@ -77,7 +78,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) {
-                            FilterScreen(navController = navController, filterData = sharedViewModel)
+                            FilterScreen(
+                                navController = navController,
+                                filterData = sharedViewModel
+                            )
                         }
                         composable(
                             route = Screen.Settings.route,
@@ -88,7 +92,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) {
-                            SettingsScreen(navController = navController, settingsData = settingsViewModel)
+                            SettingsScreen(
+                                navController = navController,
+                                settingsData = settingsViewModel
+                            )
                         }
                     }
                 }
@@ -112,7 +119,8 @@ class MainActivity : ComponentActivity() {
         val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
         val selectedLines = sharedPref.getString("selectedLines", "[]")
         if (selectedLines?.let { isValidJsonArray(it) } == true) {
-            settingsViewModel.selectedLines = Gson().fromJson(selectedLines, Array<LineStatePair>::class.java).toMutableList()
+            settingsViewModel.selectedLines =
+                Gson().fromJson(selectedLines, Array<LineStatePair>::class.java).toMutableList()
         } else {
             settingsViewModel.selectedLines = mutableListOf()
         }
@@ -156,8 +164,10 @@ class MainActivity : ComponentActivity() {
             .addTag(DisturbanceWorker.WORKER_TAG)
             .setInputData(
                 workDataOf(
-                    "selectedLines" to settingsViewModel.selectedLines.filter { it.enabled }.map { it.line.id }.toTypedArray()
-                ))
+                    "selectedLines" to settingsViewModel.selectedLines.filter { it.enabled }
+                        .map { it.line.id }.toTypedArray()
+                )
+            )
             .setConstraints(constraints)
             .build()
         WorkManager.getInstance(this).enqueue(workRequest)

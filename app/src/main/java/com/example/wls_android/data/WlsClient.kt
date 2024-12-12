@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-fun getKtorClient(path : String): HttpClient {
+fun getKtorClient(path: String): HttpClient {
     return HttpClient(CIO) {
         expectSuccess = false
         defaultRequest {
@@ -29,8 +29,8 @@ fun getKtorClient(path : String): HttpClient {
                 path(path)
             }
             headers.appendIfNameAbsent(
-                    HttpHeaders.ContentType,
-                    ContentType.Application.Json.toString()
+                HttpHeaders.ContentType,
+                ContentType.Application.Json.toString()
             )
         }
         install(Logging) {

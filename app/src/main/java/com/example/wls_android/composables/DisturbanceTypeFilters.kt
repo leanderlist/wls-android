@@ -61,7 +61,8 @@ fun DisturbanceTypeFilters(
     ) {
         Card(
             onClick = { showTypes.value = !showTypes.value },
-            modifier = Modifier.padding(top = 5.dp)
+            modifier = Modifier
+                .padding(top = 5.dp)
                 .padding(horizontal = 10.dp)
         ) {
             Row(
@@ -95,7 +96,7 @@ fun DisturbanceTypeFilters(
             }
         }
 
-        if(showTypes.value) {
+        if (showTypes.value) {
             Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                 for (i in 0..13) {
                     DisturbanceType(label = typeTexts[i], checked = disturbanceTypes[i])
@@ -108,8 +109,8 @@ fun DisturbanceTypeFilters(
 
 @Composable
 fun DisturbanceType(
-    label : String,
-    checked : MutableState<Boolean>
+    label: String,
+    checked: MutableState<Boolean>
 ) {
     Row(
         modifier = Modifier

@@ -1,4 +1,5 @@
 package com.example.wls_android.ui.theme
+
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF904B3C)

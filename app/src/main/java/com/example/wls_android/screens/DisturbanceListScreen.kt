@@ -68,7 +68,11 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisturbanceListScreen(navController: NavHostController, filterData: FilterData, disturbanceIdToOpen: String?) {
+fun DisturbanceListScreen(
+    navController: NavHostController,
+    filterData: FilterData,
+    disturbanceIdToOpen: String?
+) {
 
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
@@ -197,7 +201,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                     imageVector = Icons.Filled.FilterAlt,
                     contentDescription = "Open Filter screen"
                 )
-            }                       
+            }
         },
         topBar = {
             WlsHeader(navController)

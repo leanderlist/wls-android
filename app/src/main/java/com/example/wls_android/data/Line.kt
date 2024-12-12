@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Line(
-    val id : String,
-    val type : Int
+    val id: String,
+    val type: Int
 )

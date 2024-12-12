@@ -16,7 +16,7 @@ import com.example.wls_android.screens.stringToDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun DescriptionCard(descriptions : List<Description>) {
+fun DescriptionCard(descriptions: List<Description>) {
     Card(
         colors = CardDefaults.cardColors(
             //containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -33,16 +33,16 @@ fun DescriptionCard(descriptions : List<Description>) {
                 text = descriptions[0].description,
             )
 
-            if(descriptions.size > 1) {
-                for(i in 1 until descriptions.size) {
-                    var time : String? = null
+            if (descriptions.size > 1) {
+                for (i in 1 until descriptions.size) {
+                    var time: String? = null
                     stringToDateTime(
                         descriptions[i].time.substring(0, descriptions[i].time.indexOf('.')),
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                     )?.let {
                         time = it.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
                     }
-                    if(time != null) {
+                    if (time != null) {
                         Card(
                             colors = CardDefaults.cardColors(
                                 // containerColor = MaterialTheme.colorScheme.background

@@ -135,7 +135,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
         Log.e("awhawg", lineList.toString())
         if (lineList != null) {
             lineStateList.forEachIndexed { index, pair ->
-                if(pair.line.id in lineList) {
+                if (pair.line.id in lineList) {
                     lineList.remove(pair.line.id)
                     lineStateList[index] = LineStatePair(pair.line, true)
                 }
@@ -150,7 +150,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
 
         //parse types
         val typeListStr = filterData.filters["type"]?.split(",")
-        val typeList : List<Int>? = typeListStr?.map { it.toInt() }
+        val typeList: List<Int>? = typeListStr?.map { it.toInt() }
         if (typeList != null) {
             disturbanceTypes.forEachIndexed { index, value ->
                 disturbanceTypes[index] = mutableStateOf(index in typeList)
@@ -159,12 +159,14 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
 
         //parse from & to
         val parseFromDate = filterData.filters["from"]
-        if(parseFromDate != null) {
-            fromDate = LocalDate.parse(parseFromDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
+        if (parseFromDate != null) {
+            fromDate = LocalDate.parse(parseFromDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                .atStartOfDay()
         }
         val parseToDate = filterData.filters["to"]
-        if(parseToDate != null) {
-            fromDate = LocalDate.parse(parseToDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()
+        if (parseToDate != null) {
+            fromDate = LocalDate.parse(parseToDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                .atStartOfDay()
         }
 
     }
@@ -423,7 +425,10 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
                             toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                         )
 
-                        Log.e(lineStateList.toList().size.toString(), lineStateList.toList().toString())
+                        Log.e(
+                            lineStateList.toList().size.toString(),
+                            lineStateList.toList().toString()
+                        )
 
                         navController.popBackStack()
                     },

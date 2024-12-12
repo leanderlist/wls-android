@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LineData(
-    val data : List<Line>
+    val data: List<Line>
 )

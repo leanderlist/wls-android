@@ -30,13 +30,19 @@ import com.example.wls_android.model.LineStatePair
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ListLines(title : String, lineList : List<LineStatePair>, stateList : SnapshotStateList<LineStatePair>, type: Int) {
+fun ListLines(
+    title: String,
+    lineList: List<LineStatePair>,
+    stateList: SnapshotStateList<LineStatePair>,
+    type: Int
+) {
     val showLines = remember {
         mutableStateOf(false)
     }
     Card(
         onClick = { showLines.value = !showLines.value },
-        modifier = Modifier.padding(top = 5.dp)
+        modifier = Modifier
+            .padding(top = 5.dp)
             .padding(horizontal = 10.dp)
     ) {
         Row {
@@ -68,7 +74,7 @@ fun ListLines(title : String, lineList : List<LineStatePair>, stateList : Snapsh
         }
     }
 
-    if(showLines.value) {
+    if (showLines.value) {
         FlowRow(
             modifier = Modifier.wrapContentSize()
         ) {

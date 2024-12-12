@@ -21,7 +21,12 @@ import com.example.wls_android.R
 import com.example.wls_android.data.Line
 
 @Composable
-fun LineIcon(line: Line, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, enabledState : Boolean = false) {
+fun LineIcon(
+    line: Line,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    enabledState: Boolean = false
+) {
     var color = colorResource(id = R.color.line_bus)
     when (line.type) {
         0 -> color = colorResource(id = R.color.line_bus)

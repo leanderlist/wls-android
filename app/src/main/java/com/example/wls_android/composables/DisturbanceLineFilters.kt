@@ -33,7 +33,8 @@ fun DisturbanceLineFilters(
         Text(
             text = "Linien",
             fontSize = 20.sp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 10.dp)
 
         )

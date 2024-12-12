@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AcordionHeader(
     title: String,
-    content : () -> Unit
+    content: () -> Unit
 ) {
     Card(
         modifier = Modifier

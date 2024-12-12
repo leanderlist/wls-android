@@ -93,7 +93,12 @@ fun SettingsScreen(navController: NavHostController, settingsData: SettingsData)
 }
 
 @Composable
-fun SaveSettings(navController: NavHostController, lineStateList: SnapshotStateList<LineStatePair>, settingsData: SettingsData, onSaveClick: () -> Unit) {
+fun SaveSettings(
+    navController: NavHostController,
+    lineStateList: SnapshotStateList<LineStatePair>,
+    settingsData: SettingsData,
+    onSaveClick: () -> Unit
+) {
     Button(
         modifier = Modifier
             .fillMaxWidth()

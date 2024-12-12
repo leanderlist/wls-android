@@ -7,7 +7,7 @@ class FilterData : ViewModel() {
     var filters = mutableStateMapOf<String, String>()
         private set
 
-    fun addFilter(key : String, value : String) {
+    fun addFilter(key: String, value: String) {
         filters[key] = value
     }
 

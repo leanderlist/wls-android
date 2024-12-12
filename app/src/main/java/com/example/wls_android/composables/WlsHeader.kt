@@ -2,7 +2,10 @@ package com.example.wls_android.composables
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SubdirectoryArrowLeft
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,7 +23,8 @@ import com.example.wls_android.navigation.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WlsHeader(
-    navController: NavController
+    navController: NavController,
+    disableSettings: Boolean = false
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
@@ -29,13 +33,24 @@ fun WlsHeader(
         title = {
             Text(text = "Wiener Linien Störungsarchiv", fontWeight = FontWeight.Bold)
         },
+        navigationIcon = {
+            if (disableSettings) {
+                IconButton(onClick = { navController.navigate(Screen.DisturbanceList.route) }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Open Disturbance List"
+                    )
+                }
+            }
+        },
         actions = {
-            IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = "Open Settings",
-                    // tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+            if (!disableSettings) {
+                IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Open Settings"
+                    )
+                }
             }
         }
     )

@@ -62,7 +62,7 @@ fun SettingsScreen(navController: NavHostController, settingsData: SettingsData)
 
     Scaffold(
         topBar = {
-            WlsHeader(navController)
+            WlsHeader(navController, disableSettings = true)
         }
     ) {
         LazyColumn(

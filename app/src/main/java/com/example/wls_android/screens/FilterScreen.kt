@@ -183,7 +183,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
 
     Scaffold(
         topBar = {
-            WlsHeader(navController)
+            WlsHeader(navController, disableSettings = true)
         }
     ) {
         LazyColumn(

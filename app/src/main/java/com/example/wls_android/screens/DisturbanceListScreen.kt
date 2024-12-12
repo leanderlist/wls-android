@@ -53,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +62,7 @@ import androidx.navigation.NavHostController
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceCard
 import com.example.wls_android.composables.LineIcon
+import com.example.wls_android.composables.WlsHeader
 import com.example.wls_android.data.Data
 import com.example.wls_android.data.Disturbance
 import com.example.wls_android.data.getKtorClient
@@ -207,24 +209,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
             }                       
         },
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = Color.White
-                ),
-                title = {
-                    Text(text = "WLS")
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Open Settings",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            )
+            WlsHeader(navController)
         },
         snackbarHost = {
             SnackbarHost(hostState = snackBarHost)

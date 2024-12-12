@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceLineFilters
+import com.example.wls_android.composables.WlsHeader
 import com.example.wls_android.data.LineData
 import com.example.wls_android.data.getKtorClient
 import com.example.wls_android.model.LineStatePair
@@ -61,26 +62,7 @@ fun SettingsScreen(navController: NavHostController, settingsData: SettingsData)
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = Color.White
-                ),
-                title = {
-                    Text(text = "Einstellungen")
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                }
-            )
+            WlsHeader(navController)
         }
     ) {
         LazyColumn(

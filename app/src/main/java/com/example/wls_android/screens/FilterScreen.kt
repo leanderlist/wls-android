@@ -49,6 +49,7 @@ import androidx.navigation.NavHostController
 import com.example.wls_android.R
 import com.example.wls_android.composables.DisturbanceLineFilters
 import com.example.wls_android.composables.DisturbanceTypeFilters
+import com.example.wls_android.composables.WlsHeader
 import com.example.wls_android.data.Line
 import com.example.wls_android.data.LineData
 import com.example.wls_android.data.getKtorClient
@@ -182,26 +183,7 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = Color.White
-                ),
-                title = {
-                    Text(text = "Filter")
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                }
-            )
+            WlsHeader(navController)
         }
     ) {
         LazyColumn(

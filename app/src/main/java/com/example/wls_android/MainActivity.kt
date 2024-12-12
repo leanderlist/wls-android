@@ -1,12 +1,15 @@
 package com.example.wls_android
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,6 +32,7 @@ import com.example.wls_android.worker.DisturbanceWorker
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit
+import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel : SettingsData
@@ -37,7 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         settingsViewModel = ViewModelProvider(this)[SettingsData::class.java]
         setContent {
-            AppTheme {
+            AppTheme(dynamicColor = settingsViewModel.getTheme() == "dynamic") {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -112,6 +116,7 @@ class MainActivity : ComponentActivity() {
         } else {
             settingsViewModel.selectedLines = mutableListOf()
         }
+        settingsViewModel.theme.value = sharedPref.getString("theme", "standard") ?: "standard"
     }
 
     private fun isValidJsonArray(json: String): Boolean {
@@ -126,6 +131,7 @@ class MainActivity : ComponentActivity() {
         val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
         with(sharedPref.edit()) {
             putString("selectedLines", Gson().toJson(settingsViewModel.selectedLines))
+            putString("theme", settingsViewModel.theme.value)
             apply()
         }
     }

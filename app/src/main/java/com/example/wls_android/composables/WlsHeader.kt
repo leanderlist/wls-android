@@ -37,7 +37,6 @@ fun WlsHeader(
                     // tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
-        },
-        modifier = Modifier.padding(bottom = 5.dp)
+        }
     )
 }

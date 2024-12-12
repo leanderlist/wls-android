@@ -349,7 +349,7 @@ fun DisturbanceListScreen(navController: NavHostController, filterData: FilterDa
                     DisturbanceCard(
                         disturbance = disturbance,
                         modifier = Modifier
-                            .padding(vertical = 5.dp)
+                            .padding(top = 10.dp)
                             .clickable {
                                 sheetDisturbance = disturbance
                                 showBottomSheet = true

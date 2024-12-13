@@ -1,13 +1,19 @@
 package com.example.wls_android
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -31,10 +37,32 @@ import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Handle the result of the permission request here
+        if (permissions[Manifest.permission.POST_NOTIFICATIONS] == true) {
+            // Permission granted
+            Toast.makeText(this, "Benachrichtigungserlaubnis erlaubt", Toast.LENGTH_SHORT).show()
+        } else {
+            // Permission denied
+            Toast.makeText(this, "Benachrichtigungserlaubnis verweigert", Toast.LENGTH_SHORT).show()
+        }
+    }
     private lateinit var settingsViewModel: SettingsData
     private var notificationAlreadyOpened = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+            }
+        }
         settingsViewModel = ViewModelProvider(this)[SettingsData::class.java]
         setContent {
             AppTheme(dynamicColor = settingsViewModel.getTheme() == "dynamic") {
@@ -130,7 +158,7 @@ class MainActivity : ComponentActivity() {
     private fun isValidJsonArray(json: String): Boolean {
         return try {
             Gson().fromJson(json, Any::class.java) is List<*>
-        } catch (ex: JsonSyntaxException) {
+        } catch (_: JsonSyntaxException) {
             false
         }
     }

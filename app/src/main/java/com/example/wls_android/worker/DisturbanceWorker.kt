@@ -147,8 +147,6 @@ class DisturbanceWorker(appContext: Context, workerParams: WorkerParameters) :
             with(NotificationManagerCompat.from(applicationContext)) {
                 notify(notificationId, builder.build())
             }
-        } else {
-            // TODO: Case wenn keine Berechtigung für Benachrichtigungen
         }
     }
 }

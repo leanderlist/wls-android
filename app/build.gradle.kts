@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.wls_android"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.wls_android"

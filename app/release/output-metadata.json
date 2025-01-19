@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.example.wls_android",
+  "applicationId": "at.wls_android.app",
   "variantName": "release",
   "elements": [
     {

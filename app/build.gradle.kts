@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.wls_android"
+    namespace = "at.wls_android.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.wls_android"
+        applicationId = "at.wls_android.app"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

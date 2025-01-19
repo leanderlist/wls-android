@@ -30,8 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -62,6 +60,7 @@ import at.wls_android.app.navigation.Screen
 import at.wls_android.app.viewmodel.FilterData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -73,43 +72,24 @@ fun DisturbanceListScreen(
     filterData: FilterData,
     disturbanceIdToOpen: String?
 ) {
-
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember {
-        mutableStateOf(false)
-    }
-
-    var errorMessage by remember {
-        mutableStateOf("")
-    }
-
-    var sheetDisturbance by remember {
-        mutableStateOf<Disturbance?>(null)
-    }
-
-    val disturbanceList = remember {
-        mutableStateListOf<Disturbance>()
-    }
-
-    var spinnerLoading by remember {
-        mutableStateOf(true)
-    }
-
-    val snackBarHost = remember {
-        SnackbarHostState()
-    }
-
-    rememberCoroutineScope()
-
-    val pullRefreshState = rememberPullToRefreshState()
-
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var sheetDisturbance by remember { mutableStateOf<Disturbance?>(null) }
+    val disturbanceList = remember { mutableStateListOf<Disturbance>() }
+    var spinnerLoading by remember { mutableStateOf(true) }
+    val snackBarHost = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var isRefreshing by remember { mutableStateOf(false) }
     val filters: SnapshotStateMap<String, String> = filterData.filters
 
-    if (pullRefreshState.isRefreshing) {
-        LaunchedEffect(Unit) {
+    fun loadDisturbances() {
+        coroutineScope.launch {
             try {
+                disturbanceList.clear()
+                spinnerLoading = true
                 val client = getKtorClient("/api/disturbances")
                 val response = client.get {
                     url {
@@ -131,52 +111,16 @@ fun DisturbanceListScreen(
                 }
                 val body = response.body<Data>()
                 if (response.status.value in 200..299) {
-                    disturbanceList.clear()
                     disturbanceList.addAll(body.data)
-                    spinnerLoading = false
                     errorMessage = ""
-                    spinnerLoading = false
                 } else {
                     errorMessage = "Es sind keine Störungen vorhanden"
-                    spinnerLoading = false
                 }
-            } catch (e: Exception) {
-                snackBarHost.showSnackbar("Es konnte keine Verbindung hergestellt werden")
-                spinnerLoading = false
-            }
-            pullRefreshState.endRefresh()
-        }
-    }
-
-    LaunchedEffect(key1 = Unit) {
-        try {
-            val client = getKtorClient("/api/disturbances")
-            val response = client.get {
-                url {
-                    if (filters.isEmpty()) {
-                        parameters.append(
-                            "from",
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        )
-                        parameters.append(
-                            "to",
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        )
-                    } else {
-                        for (entry in filters.toMap()) {
-                            parameters.append(entry.key, entry.value)
-                        }
-                    }
-                }
-            }
-            val body = response.body<Data>()
-            if (response.status.value in 200..299) {
-                disturbanceList.addAll(body.data)
-                spinnerLoading = false
-
-                // Open the sheet with the disturbance if disturbanceIdToOpen is not null
-                disturbanceIdToOpen?.let { disturbanceId ->
-                    val disturbance = disturbanceList.find { it.id == disturbanceId }
+            } catch (_: Exception) {
+                errorMessage = "Es ist ein Fehler aufgetreten"
+            } finally {
+                if (disturbanceIdToOpen != null && disturbanceList.isNotEmpty()) {
+                    val disturbance = disturbanceList.find { it.id == disturbanceIdToOpen }
                     if (disturbance != null) {
                         sheetDisturbance = disturbance
                         showBottomSheet = true
@@ -184,14 +128,13 @@ fun DisturbanceListScreen(
                         snackBarHost.showSnackbar("Gewählte Störung nicht gefunden")
                     }
                 }
-            } else {
-                errorMessage = "Es sind keine Störungen vorhanden"
                 spinnerLoading = false
             }
-        } catch (e: Exception) {
-            errorMessage = "Es konnte keine Verbindung hergestellt werden"
-            spinnerLoading = false
         }
+    }
+
+    LaunchedEffect(Unit) {
+        loadDisturbances()
     }
 
     Scaffold(
@@ -295,7 +238,7 @@ fun DisturbanceListScreen(
                                         descriptions[i].time.indexOf('.')
                                     )
 
-                                if (initialDate.equals(descriptionDate.substring(0, 10))) {
+                                if (initialDate == descriptionDate.substring(0, 10)) {
                                     Text(
                                         text = "Update: ${formatStringDate(descriptionDate, 3)}",
                                         fontWeight = FontWeight.Bold,
@@ -317,40 +260,43 @@ fun DisturbanceListScreen(
         }
         Box(
             modifier = Modifier
-                .nestedScroll(connection = pullRefreshState.nestedScrollConnection)
                 .fillMaxSize()
         ) {
-            PullToRefreshContainer(
-                state = pullRefreshState,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .zIndex(10F)
-                    .padding(top = 64.dp)
-            )
             if (spinnerLoading)
                 CircularProgressIndicator(
                     modifier = Modifier
                         .size(24.dp)
-                        .padding(top = 112.dp)
+                        .padding(top = 125.dp)
                         .align(Alignment.TopCenter)
                 )
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier
-                    .padding(it)
-                    .padding(horizontal = 5.dp)
-                    .fillMaxSize()
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    coroutineScope.launch {
+                        isRefreshing = true
+                        loadDisturbances()
+                        isRefreshing = false
+                    }
+                }
             ) {
-                items(disturbanceList) { disturbance ->
-                    DisturbanceCard(
-                        disturbance = disturbance,
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                            .clickable {
-                                sheetDisturbance = disturbance
-                                showBottomSheet = true
-                            }
-                    )
+                LazyColumn(
+                    state = scrollState,
+                    modifier = Modifier
+                        .padding(it)
+                        .padding(horizontal = 5.dp)
+                        .fillMaxSize()
+                ) {
+                    items(disturbanceList) { disturbance ->
+                        DisturbanceCard(
+                            disturbance = disturbance,
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .clickable {
+                                    sheetDisturbance = disturbance
+                                    showBottomSheet = true
+                                }
+                        )
+                    }
                 }
             }
             Text(

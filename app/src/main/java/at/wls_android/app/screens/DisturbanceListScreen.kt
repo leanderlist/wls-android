@@ -304,7 +304,7 @@ fun DisturbanceListScreen(
                 modifier = Modifier
                     .zIndex(11F)
                     .align(Alignment.TopCenter)
-                    .padding(top = 100.dp)
+                    .padding(top = 125.dp)
             )
         }
     }

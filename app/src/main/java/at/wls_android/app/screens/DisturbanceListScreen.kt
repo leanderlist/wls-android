@@ -85,7 +85,7 @@ fun DisturbanceListScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val filters: SnapshotStateMap<String, String> = filterData.filters
 
-    fun loadDisturbances() {
+    fun loadDisturbances(initialIdToOpen: String = "") {
         coroutineScope.launch {
             try {
                 disturbanceList.clear()
@@ -119,8 +119,8 @@ fun DisturbanceListScreen(
             } catch (_: Exception) {
                 errorMessage = "Es ist ein Fehler aufgetreten"
             } finally {
-                if (disturbanceIdToOpen != null && disturbanceList.isNotEmpty()) {
-                    val disturbance = disturbanceList.find { it.id == disturbanceIdToOpen }
+                if (disturbanceList.isNotEmpty() && initialIdToOpen.isNotEmpty()) {
+                    val disturbance = disturbanceList.find { it.id == initialIdToOpen }
                     if (disturbance != null) {
                         sheetDisturbance = disturbance
                         showBottomSheet = true
@@ -134,7 +134,7 @@ fun DisturbanceListScreen(
     }
 
     LaunchedEffect(Unit) {
-        loadDisturbances()
+        loadDisturbances(disturbanceIdToOpen ?: "")
     }
 
     Scaffold(

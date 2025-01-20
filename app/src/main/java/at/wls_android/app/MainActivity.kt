@@ -44,10 +44,10 @@ class MainActivity : ComponentActivity() {
         // Handle the result of the permission request here
         if (permissions[Manifest.permission.POST_NOTIFICATIONS] == true) {
             // Permission granted
-            Toast.makeText(this, "Benachrichtigungserlaubnis erlaubt", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Benachrichtigungen erlaubt", Toast.LENGTH_SHORT).show()
         } else {
             // Permission denied
-            Toast.makeText(this, "Benachrichtigungserlaubnis verweigert", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Benachrichtigungen verweigert", Toast.LENGTH_SHORT).show()
         }
     }
     private lateinit var settingsViewModel: SettingsData

@@ -10,9 +10,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
@@ -33,6 +42,11 @@ import at.wls_android.app.ui.theme.AppTheme
 import at.wls_android.app.viewmodel.FilterData
 import at.wls_android.app.viewmodel.SettingsData
 import at.wls_android.app.worker.DisturbanceWorker
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import java.util.concurrent.TimeUnit
@@ -61,6 +75,9 @@ class MainActivity : ComponentActivity() {
                 false
             }
         }
+
+        MobileAds.initialize(this) {}
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -101,7 +118,8 @@ class MainActivity : ComponentActivity() {
                             DisturbanceListScreen(
                                 navController = navController,
                                 filterData = sharedViewModel,
-                                disturbanceIdToOpen = openFromNotificationId
+                                disturbanceIdToOpen = openFromNotificationId,
+                                adMobBanner = { AdmobBanner(modifier = Modifier.fillMaxWidth()) }
                             )
                         }
                         composable(
@@ -136,6 +154,26 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    @Composable
+    fun AdmobBanner(modifier: Modifier = Modifier) {
+        AndroidView(
+            modifier = modifier,
+            factory = { context ->
+                // on below line specifying ad view.
+                AdView(context).apply {
+                    // on below line specifying ad size
+                    //adSize = AdSize.BANNER
+                    // on below line specifying ad unit id
+                    // currently added a test ad unit id.
+                    setAdSize(AdSize.BANNER)
+                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                    // calling load ad to load our ad.
+                    loadAd(AdRequest.Builder().build())
+                }
+            }
+        )
     }
 
     override fun onStart() {

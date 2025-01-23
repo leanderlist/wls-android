@@ -70,7 +70,8 @@ import java.time.format.DateTimeFormatter
 fun DisturbanceListScreen(
     navController: NavHostController,
     filterData: FilterData,
-    disturbanceIdToOpen: String?
+    disturbanceIdToOpen: String?,
+    adMobBanner: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
@@ -139,7 +140,10 @@ fun DisturbanceListScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Screen.Filter.route) }) {
+            FloatingActionButton(
+                onClick = { navController.navigate(Screen.Filter.route) },
+                // modifier = Modifier.padding(bottom = 35.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,
                     contentDescription = "Open Filter screen"
@@ -166,7 +170,7 @@ fun DisturbanceListScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp)
+                            .padding(start = 10.dp, end = 10.dp)
                             .navigationBarsPadding()
                     ) {
                         Row(
@@ -258,54 +262,62 @@ fun DisturbanceListScreen(
                 }
             }
         }
-        Box(
+        Column(
             modifier = Modifier
+                .padding(it)
                 .fillMaxSize()
         ) {
-            if (spinnerLoading)
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(top = 125.dp)
-                        .align(Alignment.TopCenter)
-                )
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = {
-                    coroutineScope.launch {
-                        isRefreshing = true
-                        loadDisturbances()
-                        isRefreshing = false
-                    }
-                }
-            ) {
-                LazyColumn(
-                    state = scrollState,
-                    modifier = Modifier
-                        .padding(it)
-                        .padding(horizontal = 5.dp)
-                        .fillMaxSize()
-                ) {
-                    items(disturbanceList) { disturbance ->
-                        DisturbanceCard(
-                            disturbance = disturbance,
-                            modifier = Modifier
-                                .padding(top = 10.dp)
-                                .clickable {
-                                    sheetDisturbance = disturbance
-                                    showBottomSheet = true
-                                }
-                        )
-                    }
-                }
-            }
-            Text(
-                text = errorMessage,
+            Box(
                 modifier = Modifier
-                    .zIndex(11F)
-                    .align(Alignment.TopCenter)
-                    .padding(top = 125.dp)
-            )
+                    .weight(1f)
+                    .fillMaxSize()
+            ) {
+                if (spinnerLoading)
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(top = 125.dp)
+                            .align(Alignment.TopCenter)
+                    )
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        coroutineScope.launch {
+                            isRefreshing = true
+                            loadDisturbances()
+                            isRefreshing = false
+                        }
+                    }
+                ) {
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                            .fillMaxSize(),
+                    ) {
+                        items(disturbanceList) { disturbance ->
+                            DisturbanceCard(
+                                disturbance = disturbance,
+                                modifier = Modifier
+                                    .padding(top = 10.dp)
+                                    .clickable {
+                                        sheetDisturbance = disturbance
+                                        showBottomSheet = true
+                                    }
+                            )
+                        }
+                    }
+                }
+                if (errorMessage.isNotEmpty())
+                    Text(
+                        text = errorMessage,
+                        modifier = Modifier
+                            .zIndex(11F)
+                            .align(Alignment.TopCenter)
+                            .padding(top = 125.dp)
+                    )
+            }
+            adMobBanner()
         }
     }
 }

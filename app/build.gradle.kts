@@ -54,6 +54,8 @@ android {
 val ktor_version: String by project
 
 dependencies {
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
+
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-logging:$ktor_version")

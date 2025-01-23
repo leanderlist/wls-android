@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,7 +56,11 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterScreen(navController: NavHostController, filterData: FilterData) {
+fun FilterScreen(
+    navController: NavHostController,
+    filterData: FilterData,
+    adMobBanner: @Composable () -> Unit
+) {
 
     var active by remember {
         mutableStateOf(false)
@@ -178,264 +183,271 @@ fun FilterScreen(navController: NavHostController, filterData: FilterData) {
             WlsHeader(navController, disableSettings = true)
         }
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
-                .navigationBarsPadding()
         ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .padding(top = 15.dp, bottom = 10.dp)
-                        .clickable(
-                            indication = null,
-                            interactionSource = null
-                        ) { active = !active }
-                ) {
-                    Checkbox(
-                        checked = active,
-                        onCheckedChange = { active = !active },
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+            ) {
+                item {
+                    Row(
                         modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .size(20.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = "Nur offene Störungen anzeigen",
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp)
+                            .padding(top = 15.dp, bottom = 10.dp)
+                            .clickable(
+                                indication = null,
+                                interactionSource = null
+                            ) { active = !active }
+                    ) {
+                        Checkbox(
+                            checked = active,
+                            onCheckedChange = { active = !active },
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .size(20.dp)
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = "Nur offene Störungen anzeigen",
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+                    ExposedDropdownMenuBox(
+                        expanded = dropDownExpanded,
+                        onExpandedChange = { change -> dropDownExpanded = change },
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    ) {
+                        TextField(
+                            value = dropDownValue,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
+                            },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = dropDownExpanded,
+                            onDismissRequest = { dropDownExpanded = !dropDownExpanded }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(text = "Startzeit - neuste zuerst") },
+                                onClick = {
+                                    dropDownValue = "Startzeit - neuste zuerst"
+                                    dropDownExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Startzeit - älteste zuerst") },
+                                onClick = {
+                                    dropDownValue = "Startzeit - älteste zuerst"
+                                    dropDownExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Endzeit - neuste zuerst") },
+                                onClick = {
+                                    dropDownValue = "Endzeit - neueste zuerst"
+                                    dropDownExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "Endzeit - älteste zuerst") },
+                                onClick = {
+                                    dropDownValue = "Endzeit - älteste zuerst"
+                                }
+                            )
+                        }
+                    }
+                    Row(
                         modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                    )
-                }
-                ExposedDropdownMenuBox(
-                    expanded = dropDownExpanded,
-                    onExpandedChange = { change -> dropDownExpanded = change },
-                    modifier = Modifier.padding(horizontal = 10.dp)
-                ) {
-                    TextField(
-                        value = dropDownValue,
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
-                        },
-                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                        modifier = Modifier
-                            .menuAnchor()
                             .fillMaxWidth()
                             .padding(vertical = 5.dp)
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = dropDownExpanded,
-                        onDismissRequest = { dropDownExpanded = !dropDownExpanded }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text(text = "Startzeit - neuste zuerst") },
-                            onClick = {
-                                dropDownValue = "Startzeit - neuste zuerst"
-                                dropDownExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = "Startzeit - älteste zuerst") },
-                            onClick = {
-                                dropDownValue = "Startzeit - älteste zuerst"
-                                dropDownExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = "Endzeit - neuste zuerst") },
-                            onClick = {
-                                dropDownValue = "Endzeit - neueste zuerst"
-                                dropDownExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = "Endzeit - älteste zuerst") },
-                            onClick = {
-                                dropDownValue = "Endzeit - älteste zuerst"
-                            }
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                ) {
-                    TextField(
-                        value = fromDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                        onValueChange = {},
-                        label = {
-                            Text(text = "Startdatum")
-                        },
-                        readOnly = true,
-                        modifier = Modifier
-                            .weight(1F)
-                            .padding(start = 10.dp, end = 5.dp),
-                        interactionSource = remember { MutableInteractionSource() }
-                            .also { interactionSource ->
-                                LaunchedEffect(interactionSource) {
-                                    interactionSource.interactions.collect { interaction ->
-                                        if (interaction is PressInteraction.Release) {
-                                            showFromPicker = true
+                        TextField(
+                            value = fromDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                            onValueChange = {},
+                            label = {
+                                Text(text = "Startdatum")
+                            },
+                            readOnly = true,
+                            modifier = Modifier
+                                .weight(1F)
+                                .padding(start = 10.dp, end = 5.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            if (interaction is PressInteraction.Release) {
+                                                showFromPicker = true
+                                            }
                                         }
                                     }
                                 }
+                        )
+                        if (showFromPicker) {
+                            DatePickerDialog(
+                                onDismissRequest = {},
+                                confirmButton = {
+                                    Button(onClick = {
+                                        fromDate =
+                                            convertMillisToLocalDateTime(fromPickerState.selectedDateMillis)
+                                        showFromPicker = false
+                                    }
+                                    ) {
+                                        Text(text = "Anwenden")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showFromPicker = false }) {
+                                        Text(text = "Abbrechen")
+                                    }
+                                }
+                            ) {
+                                DatePicker(state = fromPickerState)
                             }
-                    )
-                    if (showFromPicker) {
-                        DatePickerDialog(
-                            onDismissRequest = {},
-                            confirmButton = {
-                                Button(onClick = {
-                                    fromDate =
-                                        convertMillisToLocalDateTime(fromPickerState.selectedDateMillis)
-                                    showFromPicker = false
-                                }
-                                ) {
-                                    Text(text = "Anwenden")
-                                }
-                            },
-                            dismissButton = {
-                                Button(onClick = { showFromPicker = false }) {
-                                    Text(text = "Abbrechen")
-                                }
-                            }
-                        ) {
-                            DatePicker(state = fromPickerState)
                         }
-                    }
 
-                    TextField(
-                        value = toDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                        onValueChange = {},
-                        label = {
-                            Text(text = "Enddatum")
-                        },
-                        readOnly = true,
-                        modifier = Modifier
-                            .weight(1F)
-                            .padding(start = 5.dp, end = 10.dp),
-                        interactionSource = remember { MutableInteractionSource() }
-                            .also { interactionSource ->
-                                LaunchedEffect(interactionSource) {
-                                    interactionSource.interactions.collect { interaction ->
-                                        if (interaction is PressInteraction.Release) {
-                                            showToPicker = true
+                        TextField(
+                            value = toDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                            onValueChange = {},
+                            label = {
+                                Text(text = "Enddatum")
+                            },
+                            readOnly = true,
+                            modifier = Modifier
+                                .weight(1F)
+                                .padding(start = 5.dp, end = 10.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            if (interaction is PressInteraction.Release) {
+                                                showToPicker = true
+                                            }
                                         }
                                     }
                                 }
+                        )
+                        if (showToPicker) {
+                            DatePickerDialog(
+                                onDismissRequest = {},
+                                confirmButton = {
+                                    Button(onClick = {
+                                        toDate =
+                                            convertMillisToLocalDateTime(toPickerState.selectedDateMillis)
+                                        showToPicker = false
+                                    }
+                                    ) {
+                                        Text(text = "Anwenden")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(onClick = { showToPicker = false }) {
+                                        Text(text = "Abbrechen")
+                                    }
+                                }
+                            ) {
+                                DatePicker(state = toPickerState)
                             }
-                    )
-                    if (showToPicker) {
-                        DatePickerDialog(
-                            onDismissRequest = {},
-                            confirmButton = {
-                                Button(onClick = {
-                                    toDate =
-                                        convertMillisToLocalDateTime(toPickerState.selectedDateMillis)
-                                    showToPicker = false
-                                }
-                                ) {
-                                    Text(text = "Anwenden")
-                                }
-                            },
-                            dismissButton = {
-                                Button(onClick = { showToPicker = false }) {
-                                    Text(text = "Abbrechen")
-                                }
-                            }
-                        ) {
-                            DatePicker(state = toPickerState)
                         }
                     }
-                }
 
-                DisturbanceTypeFilters(
-                    disturbanceTypes = disturbanceTypes,
-                    modifier = Modifier.padding(vertical = 5.dp)
-                )
-                DisturbanceLineFilters(
-                    disturbanceLines = lineStateList,
-                    modifier = Modifier.padding(vertical = 5.dp)
-                )
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 10.dp),
-                    onClick = {
-                        filterData.resetFilters()
+                    DisturbanceTypeFilters(
+                        disturbanceTypes = disturbanceTypes,
+                        modifier = Modifier.padding(vertical = 5.dp)
+                    )
+                    DisturbanceLineFilters(
+                        disturbanceLines = lineStateList,
+                        modifier = Modifier.padding(vertical = 5.dp)
+                    )
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 10.dp),
+                        onClick = {
+                            filterData.resetFilters()
 
-                        //line parameter
-                        val lineStringBuilder = StringBuilder("")
-                        for (pair in lineStateList) {
-                            if (pair.enabled)
-                                lineStringBuilder.append("${pair.line.id},")
-                        }
-                        lineStringBuilder.setLength(lineStringBuilder.length - 1)
-                        filterData.addFilter("line", lineStringBuilder.toString())
-
-                        //type parameter
-                        val typeStringBuilder = StringBuilder("")
-                        for (i in 0 until disturbanceTypes.size) {
-                            if (disturbanceTypes[i].value) {
-                                typeStringBuilder.append("$i,")
+                            //line parameter
+                            val lineStringBuilder = StringBuilder("")
+                            for (pair in lineStateList) {
+                                if (pair.enabled)
+                                    lineStringBuilder.append("${pair.line.id},")
                             }
-                        }
-                        typeStringBuilder.setLength(typeStringBuilder.length - 1)
-                        filterData.addFilter("type", typeStringBuilder.toString())
+                            lineStringBuilder.setLength(lineStringBuilder.length - 1)
+                            filterData.addFilter("line", lineStringBuilder.toString())
 
-                        //order parameter
-                        when (dropDownValue) {
-                            "Startzeit - neuste zuerst" -> {
-                                filterData.addFilter("order", "start")
-                                filterData.addFilter("desc", "true")
+                            //type parameter
+                            val typeStringBuilder = StringBuilder("")
+                            for (i in 0 until disturbanceTypes.size) {
+                                if (disturbanceTypes[i].value) {
+                                    typeStringBuilder.append("$i,")
+                                }
+                            }
+                            typeStringBuilder.setLength(typeStringBuilder.length - 1)
+                            filterData.addFilter("type", typeStringBuilder.toString())
+
+                            //order parameter
+                            when (dropDownValue) {
+                                "Startzeit - neuste zuerst" -> {
+                                    filterData.addFilter("order", "start")
+                                    filterData.addFilter("desc", "true")
+                                }
+
+                                "Startzeit - älteste zuerst" -> {
+                                    filterData.addFilter("order", "start")
+                                    filterData.addFilter("desc", "false")
+                                }
+
+                                "Endzeit - neuste zuerst" -> {
+                                    filterData.addFilter("order", "end")
+                                    filterData.addFilter("desc", "true")
+                                }
+
+                                "Endzeit - älteste zuerst" -> {
+                                    filterData.addFilter("order", "end")
+                                    filterData.addFilter("desc", "false")
+                                }
+                            }
+                            if (active) {
+                                filterData.addFilter("active", "true")
                             }
 
-                            "Startzeit - älteste zuerst" -> {
-                                filterData.addFilter("order", "start")
-                                filterData.addFilter("desc", "false")
-                            }
+                            //date filters
+                            filterData.addFilter(
+                                "from",
+                                fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            )
+                            filterData.addFilter(
+                                "to",
+                                toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            )
 
-                            "Endzeit - neuste zuerst" -> {
-                                filterData.addFilter("order", "end")
-                                filterData.addFilter("desc", "true")
-                            }
+                            Log.e(
+                                lineStateList.toList().size.toString(),
+                                lineStateList.toList().toString()
+                            )
 
-                            "Endzeit - älteste zuerst" -> {
-                                filterData.addFilter("order", "end")
-                                filterData.addFilter("desc", "false")
-                            }
-                        }
-                        if (active) {
-                            filterData.addFilter("active", "true")
-                        }
-
-                        //date filters
-                        filterData.addFilter(
-                            "from",
-                            fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        )
-                        filterData.addFilter(
-                            "to",
-                            toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        )
-
-                        Log.e(
-                            lineStateList.toList().size.toString(),
-                            lineStateList.toList().toString()
-                        )
-
-                        navController.popBackStack()
-                    },
-                ) {
-                    Text(text = "Filter Anwenden")
+                            navController.popBackStack()
+                        },
+                    ) {
+                        Text(text = "Filter Anwenden")
+                    }
                 }
             }
+            adMobBanner()
         }
     }
 }

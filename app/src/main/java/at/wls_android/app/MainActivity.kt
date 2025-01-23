@@ -133,7 +133,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             FilterScreen(
                                 navController = navController,
-                                filterData = sharedViewModel
+                                filterData = sharedViewModel,
+                                adMobBanner = { AdmobBanner(modifier = Modifier.fillMaxWidth()) }
                             )
                         }
                         composable(

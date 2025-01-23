@@ -142,7 +142,7 @@ fun DisturbanceListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.Filter.route) },
-                // modifier = Modifier.padding(bottom = 35.dp)
+                modifier = Modifier.padding(bottom = 47.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,

@@ -36,7 +36,11 @@ import io.ktor.client.request.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController, settingsData: SettingsData) {
+fun SettingsScreen(
+    navController: NavHostController,
+    settingsData: SettingsData,
+    adMobBanner: @Composable () -> Unit
+) {
     val lineStateList = remember {
         mutableStateListOf<LineStatePair>()
     }
@@ -71,23 +75,31 @@ fun SettingsScreen(navController: NavHostController, settingsData: SettingsData)
             WlsHeader(navController, disableSettings = true)
         }
     ) {
-        LazyColumn(
+
+        Column(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
-                .navigationBarsPadding()
         ) {
-            item {
-                NotificationSettings(lineStateList)
-            }
-            item {
-                ThemeSettings(settingsData)
-            }
-            item {
-                SaveSettings(navController, lineStateList, settingsData) {
-                    isSaveClicked.value = true
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+            ) {
+                item {
+                    NotificationSettings(lineStateList)
+                }
+                item {
+                    ThemeSettings(settingsData)
+                }
+                item {
+                    SaveSettings(navController, lineStateList, settingsData) {
+                        isSaveClicked.value = true
+                    }
                 }
             }
+            adMobBanner()
         }
     }
 }

@@ -148,7 +148,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             SettingsScreen(
                                 navController = navController,
-                                settingsData = settingsViewModel
+                                settingsData = settingsViewModel,
+                                adMobBanner = { AdmobBanner(modifier = Modifier.fillMaxWidth()) }
                             )
                         }
                     }

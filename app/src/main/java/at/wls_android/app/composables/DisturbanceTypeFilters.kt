@@ -33,7 +33,6 @@ import at.wls_android.app.enums.DisturbanceType
 
 @Composable
 fun DisturbanceTypeFilters(
-    disturbanceList: List<DisturbanceType>,
     stateList: SnapshotStateList<MutableState<Boolean>>,
     modifier: Modifier = Modifier
 ) {

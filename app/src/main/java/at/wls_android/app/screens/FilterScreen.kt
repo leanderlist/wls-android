@@ -281,7 +281,6 @@ fun FilterScreen(
                 item {
                     Spacer(modifier = Modifier.size(16.dp))
                     DisturbanceTypeFilters(
-                        disturbanceList = DisturbanceType.entries,
                         stateList = disturbanceTypeBoolStates
                     )
                 }

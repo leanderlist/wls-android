@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowLeft
 import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.ArrowLeft
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,11 +21,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import at.wls_android.app.R
 import at.wls_android.app.model.LineStatePair
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -33,8 +31,7 @@ import at.wls_android.app.model.LineStatePair
 fun ListLines(
     title: String,
     lineList: List<LineStatePair>,
-    stateList: SnapshotStateList<LineStatePair>,
-    type: Int
+    stateList: SnapshotStateList<LineStatePair>
 ) {
     val showLines = remember {
         mutableStateOf(false)
@@ -49,10 +46,9 @@ fun ListLines(
             Text(
                 text = title,
                 textAlign = TextAlign.Start,
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 modifier = Modifier
-                    .padding(5.dp)
-                    .padding(end = 10.dp)
+                    .padding(8.dp)
                     .wrapContentWidth()
                     .align(Alignment.CenterVertically)
             )
@@ -64,12 +60,12 @@ fun ListLines(
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Icon(
-                (if (!showLines.value) Icons.Rounded.ArrowLeft else Icons.Rounded.ArrowDropDown),
-                contentDescription = stringResource(R.string.app_name),
+                (if (!showLines.value) Icons.AutoMirrored.Rounded.ArrowLeft else Icons.Rounded.ArrowDropDown),
                 tint = Color.White,
                 modifier = Modifier
                     .padding(5.dp)
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterVertically),
+                contentDescription = null
             )
         }
     }
@@ -81,7 +77,8 @@ fun ListLines(
             lineList.forEachIndexed { index, element ->
                 val line = element.line
                 val enabled = element.enabled
-                LineIcon(modifier = Modifier.padding(5.dp),
+                LineIcon(
+                    modifier = Modifier.padding(5.dp),
                     line = line,
                     enabledState = !enabled,
                     onClick = {

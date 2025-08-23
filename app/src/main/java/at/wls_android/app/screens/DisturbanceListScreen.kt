@@ -25,6 +25,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -53,7 +54,6 @@ import androidx.navigation.NavHostController
 import at.wls_android.app.composables.DisturbanceCard
 import at.wls_android.app.composables.LineIcon
 import at.wls_android.app.composables.WlsHeader
-import at.wls_android.app.data.Data
 import at.wls_android.app.data.Disturbance
 import at.wls_android.app.data.getKtorClient
 import at.wls_android.app.navigation.Screen
@@ -70,8 +70,7 @@ import java.time.format.DateTimeFormatter
 fun DisturbanceListScreen(
     navController: NavHostController,
     filterData: FilterData,
-    disturbanceIdToOpen: String?,
-    adMobBanner: @Composable () -> Unit
+    disturbanceIdToOpen: String?
 ) {
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
@@ -86,66 +85,66 @@ fun DisturbanceListScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val filters: SnapshotStateMap<String, String> = filterData.filters
 
-    fun loadDisturbances(initialIdToOpen: String = "") {
-        coroutineScope.launch {
-            try {
-                disturbanceList.clear()
-                spinnerLoading = true
-                val client = getKtorClient("/api/disturbances")
-                val response = client.get {
-                    url {
-                        if (filters.isEmpty()) {
-                            parameters.append(
-                                "from",
-                                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            )
-                            parameters.append(
-                                "to",
-                                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            )
-                        } else {
-                            for (entry in filters.toMap()) {
-                                parameters.append(entry.key, entry.value)
-                            }
+    suspend fun loadDisturbances(initialIdToOpen: String = "") {
+        try {
+            disturbanceList.clear()
+            val client = getKtorClient("/api/disturbances")
+            val response = client.get {
+                url {
+                    if (filters.isEmpty()) {
+                        parameters.append(
+                            "FromDate",
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
+                        parameters.append(
+                            "ToDate",
+                            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        )
+                    } else {
+                        for (entry in filters.toMap()) {
+                            parameters.append(entry.key, entry.value)
                         }
                     }
                 }
-                val body = response.body<Data>()
-                if (response.status.value in 200..299) {
-                    disturbanceList.addAll(body.data)
-                    errorMessage = ""
+            }
+            if (response.status.value in 200..299) {
+                val body = response.body<List<Disturbance>>()
+                disturbanceList.addAll(body)
+                errorMessage = ""
+            } else {
+                errorMessage = "Es sind keine Störungen vorhanden"
+            }
+        } catch (_: Exception) {
+            errorMessage = "Es ist ein Fehler aufgetreten"
+        } finally {
+            if (disturbanceList.isNotEmpty() && initialIdToOpen.isNotEmpty()) {
+                val disturbance = disturbanceList.find { it.id == initialIdToOpen }
+                if (disturbance != null) {
+                    sheetDisturbance = disturbance
+                    showBottomSheet = true
                 } else {
-                    errorMessage = "Es sind keine Störungen vorhanden"
-                }
-            } catch (_: Exception) {
-                errorMessage = "Es ist ein Fehler aufgetreten"
-            } finally {
-                if (disturbanceList.isNotEmpty() && initialIdToOpen.isNotEmpty()) {
-                    val disturbance = disturbanceList.find { it.id == initialIdToOpen }
-                    if (disturbance != null) {
-                        sheetDisturbance = disturbance
-                        showBottomSheet = true
-                    } else {
+                    coroutineScope.launch { // SnackbarHostState.showSnackbar is a suspend function
                         snackBarHost.showSnackbar("Gewählte Störung nicht gefunden")
                     }
                 }
-                spinnerLoading = false
             }
         }
     }
 
     LaunchedEffect(Unit) {
+        spinnerLoading = true
         loadDisturbances(disturbanceIdToOpen ?: "")
+        spinnerLoading = false
     }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate(Screen.Filter.route) },
-                modifier = Modifier.padding(bottom = 47.dp)
+                onClick = { navController.navigate(Screen.Filter.route) }
             ) {
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     contentDescription = "Open Filter screen"
                 )
             }
@@ -163,7 +162,7 @@ fun DisturbanceListScreen(
                 sheetState = sheetState,
             ) {
                 if (sheetDisturbance != null) {
-                    val initialDate = sheetDisturbance!!.start_time.substring(0, 10)
+                    val initialDate = sheetDisturbance!!.startedAt.substring(0, 10)
                     val descriptions = sheetDisturbance!!.descriptions
                     val title = sheetDisturbance!!.title
 
@@ -214,8 +213,8 @@ fun DisturbanceListScreen(
                         )
                         Text(
                             text = getDateText(
-                                sheetDisturbance!!.start_time,
-                                sheetDisturbance!!.end_time
+                                sheetDisturbance!!.startedAt,
+                                sheetDisturbance!!.endedAt
                             ),
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
@@ -232,14 +231,14 @@ fun DisturbanceListScreen(
                                 fontSize = 20.sp
                             )
                             Text(
-                                text = descriptions[0].description,
+                                text = descriptions[0].text,
                                 modifier = Modifier.padding(bottom = 10.dp)
                             )
                             for (i in 1 until descriptions.size) {
                                 val descriptionDate =
-                                    descriptions[i].time.substring(
+                                    descriptions[i].createdAt.substring(
                                         0,
-                                        descriptions[i].time.indexOf('.')
+                                        descriptions[i].createdAt.indexOf('.')
                                     )
 
                                 if (initialDate == descriptionDate.substring(0, 10)) {
@@ -255,7 +254,7 @@ fun DisturbanceListScreen(
                                         fontSize = 20.sp
                                     )
                                 }
-                                Text(text = descriptions[i].description)
+                                Text(text = descriptions[i].text)
                             }
                         }
                     }
@@ -317,19 +316,13 @@ fun DisturbanceListScreen(
                             .padding(top = 125.dp)
                     )
             }
-            adMobBanner()
         }
     }
 }
 
 
-fun stringToDateTime(dateStr: String?, formatterFrom: DateTimeFormatter): LocalDateTime? {
-    if (dateStr == null) return null
-    return LocalDateTime.parse(dateStr, formatterFrom)
-}
-
 fun formatStringDate(dateStr: String, type: Int): String {
-    val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val parseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
     val dateObj = LocalDateTime.parse(dateStr, parseFormatter)
 
 
@@ -350,10 +343,9 @@ fun getDateText(startTime: String, endTime: String?): String {
         strEndTime = strEndTime.substringBefore('.')
     }
 
-    var output = ""
-    var prefix = ""
+    var output: String
 
-    prefix = if (strEndTime == null)
+    val prefix: String = if (strEndTime == null)
         "Seit"
     else
         "Von"

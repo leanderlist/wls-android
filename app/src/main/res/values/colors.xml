@@ -10,6 +10,7 @@
     <color name="main_color">#E30014</color>
     <color name="line_bus">#2196F3</color>
     <color name="line_tram">#F44336</color>
+    <color name="line_night">#230574</color>
     <color name="line_miscellaneous">#9C27B0</color>
     <color name="line_u1">#F44336</color>
     <color name="line_u2">#E91E63</color>

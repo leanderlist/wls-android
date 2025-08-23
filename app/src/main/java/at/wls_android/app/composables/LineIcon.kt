@@ -19,6 +19,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import at.wls_android.app.R
 import at.wls_android.app.data.Line
+import at.wls_android.app.enums.LineType
 
 @Composable
 fun LineIcon(
@@ -27,11 +28,11 @@ fun LineIcon(
     onClick: (() -> Unit)? = null,
     enabledState: Boolean = false
 ) {
-    var color = colorResource(id = R.color.line_bus)
+    var color = colorResource(id = R.color.line_miscellaneous)
     when (line.type) {
-        0 -> color = colorResource(id = R.color.line_bus)
-        1 -> color = colorResource(id = R.color.line_tram)
-        2 -> {
+        LineType.Bus  -> color = colorResource(id = R.color.line_bus)
+        LineType.Tram -> color = colorResource(id = R.color.line_tram)
+        LineType.Metro -> {
             if (line.id.startsWith("U1", true))
                 color = colorResource(id = R.color.line_u1)
             else if (line.id.startsWith("U2", true))
@@ -43,8 +44,8 @@ fun LineIcon(
             else if (line.id.startsWith("U6", true))
                 color = colorResource(id = R.color.line_u6)
         }
-
-        else -> color = colorResource(id = R.color.line_miscellaneous)
+        LineType.Night -> color = colorResource(id = R.color.line_night)
+         LineType.Misc -> color = colorResource(id = R.color.line_miscellaneous)
     }
 
     Card(

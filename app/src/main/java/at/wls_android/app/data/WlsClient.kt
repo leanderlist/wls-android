@@ -16,8 +16,6 @@ import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
 import kotlinx.serialization.json.Json
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 fun getKtorClient(path: String): HttpClient {
     return HttpClient(CIO) {
@@ -44,6 +42,7 @@ fun getKtorClient(path: String): HttpClient {
             json(Json {
                 prettyPrint = true
                 isLenient = true
+                ignoreUnknownKeys = true
             })
         }
         install(HttpTimeout) {
@@ -51,24 +50,4 @@ fun getKtorClient(path: String): HttpClient {
             requestTimeoutMillis = 5000
         }
     }
-}
-
-fun getRequestUrl(
-    line: String? = null,
-    type: String? = null,
-    from: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-    to: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-    order: String? = null,
-    desc: Boolean? = null,
-    active: Boolean? = null
-): String {
-    var urlBuilder = StringBuilder("https://wls.byleo.net/api/?")
-    urlBuilder.append("from=$from")
-    urlBuilder.append("&to=$to")
-    if (line != null) urlBuilder.append("&line=$line")
-    if (type != null) urlBuilder.append("&type=$type")
-    if (order != null) urlBuilder.append("&order=$order")
-    if (desc != null) urlBuilder.append("&desc=$desc")
-    if (line != null) urlBuilder.append("&active=$active")
-    return urlBuilder.toString()
 }

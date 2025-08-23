@@ -1,7 +1,6 @@
 package at.wls_android.app.screens
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
@@ -12,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
@@ -29,22 +28,24 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import at.wls_android.app.composables.DisturbanceLineFilters
 import at.wls_android.app.composables.DisturbanceTypeFilters
 import at.wls_android.app.composables.WlsHeader
 import at.wls_android.app.data.Line
-import at.wls_android.app.data.LineData
 import at.wls_android.app.data.getKtorClient
+import at.wls_android.app.enums.DisturbanceType
+import at.wls_android.app.enums.OrderType
 import at.wls_android.app.model.LineStatePair
 import at.wls_android.app.viewmodel.FilterData
 import io.ktor.client.call.body
@@ -59,406 +60,268 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun FilterScreen(
     navController: NavHostController,
-    filterData: FilterData,
-    adMobBanner: @Composable () -> Unit
+    filterData: FilterData
 ) {
+    var onlyActive: Boolean by remember { mutableStateOf(filterData.filters["OnlyActive"]?.toBooleanStrictOrNull() ?: false) }
+    var orderBy: OrderType by remember {
+        mutableStateOf(
+            OrderType.entries.find { it.name == filterData.filters["OrderBy"] } ?: OrderType.StartedAtDesc
+        )
+    }
+    var orderByExpanded by remember { mutableStateOf(false) }
 
-    var active by remember {
-        mutableStateOf(false)
+    val apiDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val displayDateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+    var fromDate: LocalDateTime by remember {
+        mutableStateOf(
+            filterData.filters["FromDate"]?.let { LocalDate.parse(it, apiDateFormatter).atStartOfDay() } ?: LocalDateTime.now()
+        )
+    }
+    var toDate: LocalDateTime by remember {
+        mutableStateOf(
+            filterData.filters["ToDate"]?.let { LocalDate.parse(it, apiDateFormatter).atStartOfDay() } ?: LocalDateTime.now()
+        )
     }
 
-    var dropDownExpanded by remember {
-        mutableStateOf(false)
-    }
-    var dropDownValue by remember {
-        mutableStateOf("Startzeit - neuste zuerst")
-    }
-
-    var fromDate by remember {
-        mutableStateOf(LocalDateTime.now())//.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+    val initialSelectedTypes = filterData.filters["Types"]?.split(",")?.toSet() ?: DisturbanceType.entries.map { it.name }.toSet()
+    val disturbanceTypeBoolStates = remember {
+        DisturbanceType.entries.map { type ->
+            mutableStateOf(initialSelectedTypes.contains(type.name))
+        }.toMutableStateList()
     }
 
-    var toDate by remember {
-        mutableStateOf(LocalDateTime.now())//.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
-    }
+    val lineStates = remember { mutableStateListOf<LineStatePair>() }
 
-    var disturbanceTypes = remember {
-        List<MutableState<Boolean>>(14) { mutableStateOf(true) }.toMutableList()
-    }
+    val fromPickerState = rememberDatePickerState(
+        initialSelectedDateMillis = fromDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    )
+    val toPickerState = rememberDatePickerState(
+        initialSelectedDateMillis = toDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    )
 
-    var lineStateList = remember {
-        mutableStateListOf<LineStatePair>()
-    }
-
-    var fromPickerState = rememberDatePickerState()
-    var toPickerState = rememberDatePickerState()
-
-    var showFromPicker by remember {
-        mutableStateOf(false)
-    }
-    var showToPicker by remember {
-        mutableStateOf(false)
-    }
-
-    mutableListOf<Line>()
-    var errorMessage: String = ""
-    //Log.e("ZAHLEN", disturbanceTypes.toMap().toString())
+    var showFromPicker by remember { mutableStateOf(false) }
+    var showToPicker by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = Unit) {
         try {
             val client = getKtorClient("/api/lines")
             val response = client.get {}
-            val body = response.body<LineData>()
+            val body = response.body<List<Line>>()
             if (response.status.value in 200..299) {
-                if (body != null) {
-                    lineStateList.clear()
-                    if (!filterData.filters.isEmpty()) {
-                        lineStateList.clear()
-                        for (line in body.data) {
-                            lineStateList.add(LineStatePair(line, false))
-                        }
-                    } else {
-                        for (line in body.data) {
-                            lineStateList.add(LineStatePair(line, true))
-                        }
+                lineStates.clear()
+                val selectedLineIds = filterData.filters["Lines"]?.split(",")?.toSet()
+                if (selectedLineIds != null) {
+                    body.forEach { line ->
+                        lineStates.add(LineStatePair(line, selectedLineIds.contains(line.id)))
                     }
-                } else
-                    errorMessage = "Es konnten keine Linien gefunden werden"
+                } else {
+                    body.forEach { line ->
+                        lineStates.add(LineStatePair(line, true))
+                    }
+                }
             } else {
-                errorMessage = "Es sind keine Störungen vorhanden"
+                errorMessage = "Fehler beim Laden der Linien: ${response.status}"
             }
         } catch (e: Exception) {
-            errorMessage = e.printStackTrace().toString()
+            Log.e("FilterScreen", "Error loading lines: ${e.message}", e)
+            errorMessage = "Fehler beim Laden der Linien."
         }
     }
 
+    fun applyFilters() {
+        filterData.resetFilters()
 
+        filterData.addFilter("OnlyActive", onlyActive.toString())
+        filterData.addFilter("OrderBy", orderBy.name)
+        filterData.addFilter("FromDate", fromDate.format(apiDateFormatter))
+        filterData.addFilter("ToDate", toDate.format(apiDateFormatter))
 
-    if (!filterData.filters.isEmpty()) {
-
-        //parse enabled lines
-        val lineList = filterData.filters["line"]?.split(",")?.toMutableList()
-        Log.e("awhawg", lineList.toString())
-        if (lineList != null) {
-            lineStateList.forEachIndexed { index, pair ->
-                if (pair.line.id in lineList) {
-                    lineList.remove(pair.line.id)
-                    lineStateList[index] = LineStatePair(pair.line, true)
-                }
-            }
-            /*
-            for(pair in lineStateList) {
-                if(pair.line.id in lineList) {
-                    lineList.remove(pair.line.id)
-                }
-            }*/
+        val selectedTypes = DisturbanceType.entries
+            .filterIndexed { index, _ -> disturbanceTypeBoolStates[index].value }
+            .joinToString(",") { it.name }
+        if (selectedTypes.isNotEmpty()) {
+            filterData.addFilter("Types", selectedTypes)
         }
 
-        //parse types
-        val typeListStr = filterData.filters["type"]?.split(",")
-        val typeList: List<Int>? = typeListStr?.map { it.toInt() }
-        if (typeList != null) {
-            disturbanceTypes.forEachIndexed { index, value ->
-                disturbanceTypes[index] = mutableStateOf(index in typeList)
-            }
+        val selectedLines = lineStates.filter { it.enabled }.joinToString(",") { it.line.id }
+        if (selectedLines.isNotEmpty()) {
+            filterData.addFilter("Lines", selectedLines)
         }
-
-        //parse from & to
-        val parseFromDate = filterData.filters["from"]
-        if (parseFromDate != null) {
-            fromDate = LocalDate.parse(parseFromDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                .atStartOfDay()
-        }
-        val parseToDate = filterData.filters["to"]
-        if (parseToDate != null) {
-            fromDate = LocalDate.parse(parseToDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                .atStartOfDay()
-        }
-
+        Log.d("FilterScreen", "Applied Filters: ${filterData.filters}")
+        navController.previousBackStackEntry?.savedStateHandle?.set("filtersUpdated", true)
+        navController.popBackStack()
     }
-
-
 
     Scaffold(
-        topBar = {
-            WlsHeader(navController, disableSettings = true)
+        topBar = { WlsHeader(navController, disableSettings = true) },
+        bottomBar = {
+            Button(
+                onClick = { applyFilters() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .navigationBarsPadding()
+            ) {
+                Text("Filter anwenden")
+            }
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(paddingValues)
                 .fillMaxSize()
         ) {
+            if (errorMessage.isNotEmpty()) {
+                Text(errorMessage, color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
+            }
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxSize()
-                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 18.dp)
             ) {
                 item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(top = 15.dp, bottom = 10.dp)
-                            .clickable(
-                                indication = null,
-                                interactionSource = null
-                            ) { active = !active }
+                            .padding(vertical = 8.dp)
+                            .toggleable(
+                                value = onlyActive,
+                                onValueChange = { onlyActive = it },
+                                role = Role.Checkbox
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
-                            checked = active,
-                            onCheckedChange = { active = !active },
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .size(20.dp)
+                            checked = onlyActive,
+                            onCheckedChange = null
                         )
-                        Spacer(Modifier.width(10.dp))
                         Text(
                             text = "Nur offene Störungen anzeigen",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
+                            modifier = Modifier.padding(start = 8.dp)
                         )
-                    }
-                    ExposedDropdownMenuBox(
-                        expanded = dropDownExpanded,
-                        onExpandedChange = { change -> dropDownExpanded = change },
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    ) {
-                        TextField(
-                            value = dropDownValue,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
-                            },
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                            modifier = Modifier
-                                .menuAnchor(
-                                    type = MenuAnchorType.PrimaryNotEditable,
-                                    enabled = true
-                                )
-                                .fillMaxWidth()
-                                .padding(vertical = 5.dp)
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = dropDownExpanded,
-                            onDismissRequest = { dropDownExpanded = !dropDownExpanded }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(text = "Startzeit - neuste zuerst") },
-                                onClick = {
-                                    dropDownValue = "Startzeit - neuste zuerst"
-                                    dropDownExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "Startzeit - älteste zuerst") },
-                                onClick = {
-                                    dropDownValue = "Startzeit - älteste zuerst"
-                                    dropDownExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "Endzeit - neuste zuerst") },
-                                onClick = {
-                                    dropDownValue = "Endzeit - neueste zuerst"
-                                    dropDownExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "Endzeit - älteste zuerst") },
-                                onClick = {
-                                    dropDownValue = "Endzeit - älteste zuerst"
-                                }
-                            )
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
-                    ) {
-                        TextField(
-                            value = fromDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                            onValueChange = {},
-                            label = {
-                                Text(text = "Startdatum")
-                            },
-                            readOnly = true,
-                            modifier = Modifier
-                                .weight(1F)
-                                .padding(start = 10.dp, end = 5.dp),
-                            interactionSource = remember { MutableInteractionSource() }
-                                .also { interactionSource ->
-                                    LaunchedEffect(interactionSource) {
-                                        interactionSource.interactions.collect { interaction ->
-                                            if (interaction is PressInteraction.Release) {
-                                                showFromPicker = true
-                                            }
-                                        }
-                                    }
-                                }
-                        )
-                        if (showFromPicker) {
-                            DatePickerDialog(
-                                onDismissRequest = {},
-                                confirmButton = {
-                                    Button(onClick = {
-                                        fromDate =
-                                            convertMillisToLocalDateTime(fromPickerState.selectedDateMillis)
-                                        showFromPicker = false
-                                    }
-                                    ) {
-                                        Text(text = "Anwenden")
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(onClick = { showFromPicker = false }) {
-                                        Text(text = "Abbrechen")
-                                    }
-                                }
-                            ) {
-                                DatePicker(state = fromPickerState)
-                            }
-                        }
-
-                        TextField(
-                            value = toDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                            onValueChange = {},
-                            label = {
-                                Text(text = "Enddatum")
-                            },
-                            readOnly = true,
-                            modifier = Modifier
-                                .weight(1F)
-                                .padding(start = 5.dp, end = 10.dp),
-                            interactionSource = remember { MutableInteractionSource() }
-                                .also { interactionSource ->
-                                    LaunchedEffect(interactionSource) {
-                                        interactionSource.interactions.collect { interaction ->
-                                            if (interaction is PressInteraction.Release) {
-                                                showToPicker = true
-                                            }
-                                        }
-                                    }
-                                }
-                        )
-                        if (showToPicker) {
-                            DatePickerDialog(
-                                onDismissRequest = {},
-                                confirmButton = {
-                                    Button(onClick = {
-                                        toDate =
-                                            convertMillisToLocalDateTime(toPickerState.selectedDateMillis)
-                                        showToPicker = false
-                                    }
-                                    ) {
-                                        Text(text = "Anwenden")
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(onClick = { showToPicker = false }) {
-                                        Text(text = "Abbrechen")
-                                    }
-                                }
-                            ) {
-                                DatePicker(state = toPickerState)
-                            }
-                        }
-                    }
-
-                    DisturbanceTypeFilters(
-                        disturbanceTypes = disturbanceTypes,
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
-                    DisturbanceLineFilters(
-                        disturbanceLines = lineStateList,
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp, vertical = 10.dp),
-                        onClick = {
-                            filterData.resetFilters()
-
-                            //line parameter
-                            val lineStringBuilder = StringBuilder("")
-                            for (pair in lineStateList) {
-                                if (pair.enabled)
-                                    lineStringBuilder.append("${pair.line.id},")
-                            }
-                            lineStringBuilder.setLength(lineStringBuilder.length - 1)
-                            filterData.addFilter("line", lineStringBuilder.toString())
-
-                            //type parameter
-                            val typeStringBuilder = StringBuilder("")
-                            for (i in 0 until disturbanceTypes.size) {
-                                if (disturbanceTypes[i].value) {
-                                    typeStringBuilder.append("$i,")
-                                }
-                            }
-                            typeStringBuilder.setLength(typeStringBuilder.length - 1)
-                            filterData.addFilter("type", typeStringBuilder.toString())
-
-                            //order parameter
-                            when (dropDownValue) {
-                                "Startzeit - neuste zuerst" -> {
-                                    filterData.addFilter("order", "start")
-                                    filterData.addFilter("desc", "true")
-                                }
-
-                                "Startzeit - älteste zuerst" -> {
-                                    filterData.addFilter("order", "start")
-                                    filterData.addFilter("desc", "false")
-                                }
-
-                                "Endzeit - neuste zuerst" -> {
-                                    filterData.addFilter("order", "end")
-                                    filterData.addFilter("desc", "true")
-                                }
-
-                                "Endzeit - älteste zuerst" -> {
-                                    filterData.addFilter("order", "end")
-                                    filterData.addFilter("desc", "false")
-                                }
-                            }
-                            if (active) {
-                                filterData.addFilter("active", "true")
-                            }
-
-                            //date filters
-                            filterData.addFilter(
-                                "from",
-                                fromDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            )
-                            filterData.addFilter(
-                                "to",
-                                toDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            )
-
-                            Log.e(
-                                lineStateList.toList().size.toString(),
-                                lineStateList.toList().toString()
-                            )
-
-                            navController.popBackStack()
-                        },
-                    ) {
-                        Text(text = "Filter Anwenden")
                     }
                 }
+
+                item {
+                    Text("Sortieren nach:", style = androidx.compose.material3.MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                    ExposedDropdownMenuBox(
+                        expanded = orderByExpanded,
+                        onExpandedChange = { orderByExpanded = !orderByExpanded },
+                    ) {
+                        TextField(
+                            value = orderBy.text,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = orderByExpanded) },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                            modifier = Modifier
+                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = orderByExpanded,
+                            onDismissRequest = { orderByExpanded = false }
+                        ) {
+                            OrderType.entries.forEach { selectionOption ->
+                                DropdownMenuItem(
+                                    text = { Text(text = selectionOption.text) },
+                                    onClick = {
+                                        orderBy = selectionOption
+                                        orderByExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Text("Zeitraum:", style = androidx.compose.material3.MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                    Row(Modifier.fillMaxWidth()) {
+                        TextField(
+                            value = fromDate.format(displayDateFormatter),
+                            onValueChange = {},
+                            label = { Text("Startdatum") },
+                            readOnly = true,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect {
+                                            if (it is PressInteraction.Release) showFromPicker = true
+                                        }
+                                    }
+                                }
+                        )
+                        TextField(
+                            value = toDate.format(displayDateFormatter),
+                            onValueChange = {},
+                            label = { Text("Enddatum") },
+                            readOnly = true,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect {
+                                            if (it is PressInteraction.Release) showToPicker = true
+                                        }
+                                    }
+                                }
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.size(16.dp))
+                    DisturbanceTypeFilters(
+                        disturbanceList = DisturbanceType.entries,
+                        stateList = disturbanceTypeBoolStates
+                    )
+                }
+                 item {
+                    Spacer(modifier = Modifier.size(16.dp))
+                    DisturbanceLineFilters(
+                        disturbanceLines = lineStates
+                    )
+                }
             }
-            adMobBanner()
         }
     }
-}
 
-fun convertMillisToLocalDateTime(millis: Long?): LocalDateTime {
-    return if (millis != null)
-        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime()
-    else
-        LocalDateTime.now()
+    if (showFromPicker) {
+        DatePickerDialog(
+            onDismissRequest = { showFromPicker = false },
+            confirmButton = {
+                Button(onClick = {
+                    fromPickerState.selectedDateMillis?.let {
+                        fromDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                    }
+                    showFromPicker = false
+                }) { Text("Anwenden") }
+            },
+            dismissButton = { Button(onClick = { showFromPicker = false }) { Text("Abbrechen") } }
+        ) { DatePicker(state = fromPickerState) }
+    }
+
+    if (showToPicker) {
+        DatePickerDialog(
+            onDismissRequest = { showToPicker = false },
+            confirmButton = {
+                Button(onClick = {
+                    toPickerState.selectedDateMillis?.let {
+                        toDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                    }
+                    showToPicker = false
+                }) { Text("Anwenden") }
+            },
+            dismissButton = { Button(onClick = { showToPicker = false }) { Text("Abbrechen") } }
+        ) { DatePicker(state = toPickerState) }
+    }
 }

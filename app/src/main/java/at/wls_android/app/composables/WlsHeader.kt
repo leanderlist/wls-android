@@ -26,13 +26,14 @@ fun WlsHeader(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
         title = {
-            Text(text = "Wiener Linien Störungsarchiv", fontWeight = FontWeight.Bold)
+            Text(text = "Wiener Linien Störungsarchiv", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
         },
         navigationIcon = {
             if (disableSettings) {
                 IconButton(onClick = { navController.navigate(Screen.DisturbanceList.route) }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         contentDescription = "Open Disturbance List"
                     )
                 }
@@ -43,6 +44,7 @@ fun WlsHeader(
                 IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
                     Icon(
                         imageVector = Icons.Filled.Settings,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         contentDescription = "Open Settings"
                     )
                 }

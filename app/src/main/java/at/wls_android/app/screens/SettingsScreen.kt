@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import at.wls_android.app.composables.DisturbanceLineFilters
 import at.wls_android.app.composables.WlsHeader
-import at.wls_android.app.data.LineData
+import at.wls_android.app.data.Line
 import at.wls_android.app.data.getKtorClient
 import at.wls_android.app.model.LineStatePair
 import at.wls_android.app.viewmodel.SettingsData
@@ -38,8 +38,7 @@ import io.ktor.client.request.get
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    settingsData: SettingsData,
-    adMobBanner: @Composable () -> Unit
+    settingsData: SettingsData
 ) {
     val lineStateList = remember {
         mutableStateListOf<LineStatePair>()
@@ -50,9 +49,9 @@ fun SettingsScreen(
     LaunchedEffect(key1 = Unit) {
         val client = getKtorClient("/api/lines")
         val response = client.get {}
-        val body = response.body<LineData>()
+        val body = response.body<List<Line>>()
         if (response.status.value in 200..299) {
-            for (line in body.data) {
+            for (line in body) {
                 if (settingsData.isEnabled(line)) {
                     lineStateList.add(LineStatePair(line, true))
                 } else {
@@ -99,7 +98,6 @@ fun SettingsScreen(
                     }
                 }
             }
-            adMobBanner()
         }
     }
 }

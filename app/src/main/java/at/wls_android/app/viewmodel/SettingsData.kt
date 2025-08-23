@@ -8,6 +8,7 @@ import at.wls_android.app.model.LineStatePair
 class SettingsData : ViewModel() {
     var selectedLines = mutableListOf<LineStatePair>()
     var theme = mutableStateOf("standard")
+    var baseUrl = mutableStateOf("https://wls.byleo.net")
 
     fun setTheme(theme: String) {
         if (theme != "standard" && theme != "dynamic") {
@@ -18,6 +19,14 @@ class SettingsData : ViewModel() {
 
     fun getTheme(): String {
         return theme.value
+    }
+
+    fun setBaseUrl(baseUrl: String) {
+        this.baseUrl.value = baseUrl
+    }
+
+    fun getBaseUrl(): String {
+        return baseUrl.value
     }
 
     fun addLine(line: LineStatePair) {

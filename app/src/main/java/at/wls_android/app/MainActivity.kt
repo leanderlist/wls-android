@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        setSettingsData()
+        loadSettingsData()
     }
 
     override fun onStop() {
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
         saveSettingsData()
     }
 
-    private fun setSettingsData() {
+    private fun loadSettingsData() {
         val sharedPref = getSharedPreferences("WLS-App", MODE_PRIVATE)
         val selectedLines = sharedPref.getString("selectedLines", "[]")
         if (selectedLines?.let { isValidJsonArray(it) } == true) {
@@ -128,6 +128,8 @@ class MainActivity : ComponentActivity() {
             settingsData.selectedLines = mutableListOf()
         }
         settingsData.theme.value = sharedPref.getString("theme", "standard") ?: "standard"
+        settingsData.baseUrl.value = sharedPref.getString("baseUrl", "https://wls.byleo.net")
+            ?: "https://wls.byleo.net"
     }
 
     private fun isValidJsonArray(json: String): Boolean {
@@ -143,6 +145,7 @@ class MainActivity : ComponentActivity() {
         sharedPref.edit {
             putString("selectedLines", Gson().toJson(settingsData.selectedLines))
             putString("theme", settingsData.theme.value)
+            putString("baseUrl", settingsData.baseUrl.value)
         }
     }
 }

@@ -71,7 +71,8 @@ class MainActivity : ComponentActivity() {
                             DisturbanceListScreen(
                                 navController = navController,
                                 filterData = filterData,
-                                disturbanceIdToOpen = openFromNotificationId
+                                disturbanceIdToOpen = openFromNotificationId,
+                                baseUrl = settingsData.baseUrl.value
                             )
                         }
                         composable(
@@ -85,7 +86,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             FilterScreen(
                                 navController = navController,
-                                filterData = filterData
+                                filterData = filterData,
+                                baseUrl = settingsData.baseUrl.value
                             )
                         }
                         composable(
@@ -99,7 +101,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             SettingsScreen(
                                 navController = navController,
-                                settingsData = settingsData
+                                settingsData = settingsData,
+                                baseUrl = settingsData.baseUrl.value
                             )
                         }
                     }

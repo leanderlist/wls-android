@@ -70,7 +70,8 @@ import java.time.format.DateTimeFormatter
 fun DisturbanceListScreen(
     navController: NavHostController,
     filterData: FilterData,
-    disturbanceIdToOpen: String?
+    disturbanceIdToOpen: String?,
+    baseUrl: String
 ) {
     val context = LocalContext.current
     val scrollState = rememberLazyListState()
@@ -88,7 +89,7 @@ fun DisturbanceListScreen(
     suspend fun loadDisturbances(initialIdToOpen: String = "") {
         try {
             disturbanceList.clear()
-            val client = getKtorClient("/api/disturbances")
+            val client = getKtorClient(baseUrl = baseUrl, path="/api/disturbances")
             val response = client.get {
                 url {
                     if (filters.isEmpty()) {
@@ -187,7 +188,7 @@ fun DisturbanceListScreen(
                             IconButton(
                                 onClick = {
                                     val url =
-                                        "https://wls.byleo.net/stoerung/${sheetDisturbance!!.id}"
+                                        "${baseUrl}/stoerung/${sheetDisturbance!!.id}"
                                     val intent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         putExtra(Intent.EXTRA_TEXT, url)

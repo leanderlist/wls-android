@@ -39,7 +39,8 @@ import io.ktor.client.request.get
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    settingsData: SettingsData
+    settingsData: SettingsData,
+    baseUrl: String
 ) {
     val lineStateList = remember {
         mutableStateListOf<LineStatePair>()
@@ -48,7 +49,7 @@ fun SettingsScreen(
     val isSaveClicked = remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
-        val client = getKtorClient("/api/lines")
+        val client = getKtorClient(baseUrl = baseUrl, path = "/api/lines")
         val response = client.get {}
         val body = response.body<List<Line>>()
         if (response.status.value in 200..299) {

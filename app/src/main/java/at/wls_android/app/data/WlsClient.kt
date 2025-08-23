@@ -17,13 +17,16 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.appendIfNameAbsent
 import kotlinx.serialization.json.Json
 
-fun getKtorClient(path: String): HttpClient {
+fun getKtorClient(path: String, baseUrl: String): HttpClient {
+    val protocol = if (baseUrl.startsWith("https")) URLProtocol.HTTPS else URLProtocol.HTTP
+    val host = baseUrl.removePrefix("https://").removePrefix("http://")
+
     return HttpClient(CIO) {
         expectSuccess = false
         defaultRequest {
             url {
-                protocol = URLProtocol.HTTPS
-                host = "wls.byleo.net"
+                this.protocol = protocol
+                this.host = host
                 path(path)
             }
             headers.appendIfNameAbsent(
@@ -34,9 +37,6 @@ fun getKtorClient(path: String): HttpClient {
         install(Logging) {
             logger = Logger.SIMPLE
             level = LogLevel.HEADERS
-            filter {
-                it.url.host.contains("byleo.net")
-            }
         }
         install(ContentNegotiation) {
             json(Json {

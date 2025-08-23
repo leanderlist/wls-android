@@ -60,7 +60,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun FilterScreen(
     navController: NavHostController,
-    filterData: FilterData
+    filterData: FilterData,
+    baseUrl: String
 ) {
     var onlyActive: Boolean by remember { mutableStateOf(filterData.filters["OnlyActive"]?.toBooleanStrictOrNull() ?: false) }
     var orderBy: OrderType by remember {
@@ -106,7 +107,7 @@ fun FilterScreen(
 
     LaunchedEffect(key1 = Unit) {
         try {
-            val client = getKtorClient("/api/lines")
+            val client = getKtorClient(baseUrl = baseUrl, path = "/api/lines")
             val response = client.get {}
             val body = response.body<List<Line>>()
             if (response.status.value in 200..299) {

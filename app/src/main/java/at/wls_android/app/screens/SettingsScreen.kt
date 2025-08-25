@@ -1,30 +1,38 @@
 package at.wls_android.app.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import at.wls_android.app.composables.DisturbanceLineFilters
 import at.wls_android.app.composables.WlsHeader
@@ -34,6 +42,7 @@ import at.wls_android.app.model.LineStatePair
 import at.wls_android.app.viewmodel.SettingsData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.util.network.UnresolvedAddressException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,19 +56,48 @@ fun SettingsScreen(
     }
     val initialTheme = remember { settingsData.getTheme() }
     val isSaveClicked = remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var spinnerLoading by remember { mutableStateOf(true) }
+    val snackBarHost = remember { SnackbarHostState() }
+
+    val applySettings = {
+        settingsData.resetLines()
+        for (lineStatePair in lineStateList) {
+            settingsData.addLine(lineStatePair)
+        }
+        isSaveClicked.value = true
+        navController.popBackStack()
+    }
 
     LaunchedEffect(key1 = Unit) {
-        val client = getKtorClient(baseUrl = baseUrl, path = "/api/lines")
-        val response = client.get {}
-        val body = response.body<List<Line>>()
-        if (response.status.value in 200..299) {
-            for (line in body) {
-                if (settingsData.isEnabled(line)) {
-                    lineStateList.add(LineStatePair(line, true))
+        try {
+            spinnerLoading = true
+            val client = getKtorClient(baseUrl = baseUrl, path = "/api/lines")
+            val response = client.get {}
+            if (response.status.value in 200..299) {
+                val body = response.body<List<Line>>()
+                lineStateList.clear()
+                for (line in body) {
+                    if (settingsData.isEnabled(line)) {
+                        lineStateList.add(LineStatePair(line, true))
+                    } else {
+                        lineStateList.add(LineStatePair(line, false))
+                    }
+                }
+                errorMessage = ""
+            } else {
+                errorMessage = if (response.status.value == 400) {
+                    "Fehlerhafte Anfrage"
                 } else {
-                    lineStateList.add(LineStatePair(line, false))
+                    "Fehler beim Laden der Linien: ${response.status}"
                 }
             }
+        } catch (_: UnresolvedAddressException) {
+            errorMessage = "Server nicht erreichbar. Überprüfe die Basis-URL."
+        } catch (_: Exception) {
+            errorMessage = "Es ist ein Fehler aufgetreten"
+        } finally {
+            spinnerLoading = false
         }
     }
 
@@ -74,34 +112,89 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             WlsHeader(navController, disableSettings = true)
-        }
-    ) {
-
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
-        ) {
-            LazyColumn(
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHost)
+        },
+        bottomBar = {
+            Button(
+                onClick = { applySettings() },
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .padding(16.dp)
                     .navigationBarsPadding()
             ) {
-                item {
-                    BaseUrlSettings(settingsData)
+                Text("Speichern")
+            }
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            if (spinnerLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(top = 125.dp)
+                        .align(Alignment.TopCenter)
+                )
+            }
+
+/*
+            if (errorMessage.isNotEmpty() && !spinnerLoading) {
+                Column(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center)
+                        .padding(20.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Text(
+                        text = errorMessage,
+                        style = TextStyle(
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    )
                 }
-                item {
-                    NotificationSettings(lineStateList)
-                }
-                item {
-                    ThemeSettings(settingsData)
-                }
-                item {
-                    SaveSettings(navController, lineStateList, settingsData) {
-                        isSaveClicked.value = true
+            }
+*/
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 18.dp)
+            ) {
+
+                if (!spinnerLoading)
+                    item {
+                        BaseUrlSettings(settingsData)
                     }
-                }
+
+                if (!spinnerLoading && errorMessage.isEmpty())
+                    item {
+                        Spacer(modifier = Modifier.size(16.dp))
+                        NotificationSettings(lineStateList)
+                    }
+
+                if (!spinnerLoading)
+                    item {
+                        Spacer(modifier = Modifier.size(16.dp))
+                        ThemeSettings(settingsData)
+                    }
             }
         }
     }
@@ -109,70 +202,37 @@ fun SettingsScreen(
 
 @Composable
 fun BaseUrlSettings(settingsData: SettingsData) {
-    val baseUrl = settingsData.getBaseUrl()
-    Column(
-        modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)
-    ) {
+    Column {
         Text(
-            text = "Base URL konfigurieren:",
-            fontSize = 20.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            text = "Basis URL konfigurieren:",
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         TextField(
-            value = baseUrl,
+            value = settingsData.getBaseUrl(),
             onValueChange = {
                 if (it.isEmpty())
                     settingsData.setBaseUrl("https://wls.byleo.net")
                 else
                     settingsData.setBaseUrl(it)
             },
-            label = { Text("Base URL") },
+            label = { Text("Basis URL") },
             modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
 @Composable
-fun SaveSettings(
-    navController: NavHostController,
-    lineStateList: SnapshotStateList<LineStatePair>,
-    settingsData: SettingsData,
-    onSaveClick: () -> Unit
-) {
-    Button(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 10.dp),
-        onClick = {
-            settingsData.resetLines()
-            for (lineStatePair in lineStateList) {
-                settingsData.addLine(lineStatePair)
-            }
-            onSaveClick()
-            navController.popBackStack()
-        }
-    ) {
-        Text(text = "Speichern")
-    }
-}
-
-@Composable
 fun NotificationSettings(lineStateList: SnapshotStateList<LineStatePair>) {
-    Row(
-        modifier = Modifier.padding(top = 15.dp)
-    ) {
+    Column {
         Text(
             text = "Benachrichtigungen konfigurieren:",
-            fontSize = 20.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 10.dp)
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
-    }
-    Row {
         DisturbanceLineFilters(
             disturbanceLines = lineStateList,
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -181,13 +241,10 @@ fun NotificationSettings(lineStateList: SnapshotStateList<LineStatePair>) {
 fun ThemeSettings(settingsData: SettingsData) {
     val selectedTheme = settingsData.getTheme()
 
-    Column(
-        modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)
-    ) {
+    Column {
         Text(
             text = "Theme konfigurieren:",
-            fontSize = 20.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Row(

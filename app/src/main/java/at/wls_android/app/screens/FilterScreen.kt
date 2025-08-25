@@ -3,6 +3,7 @@ package at.wls_android.app.screens
 import android.util.Log
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,14 +14,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,8 +42,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import at.wls_android.app.composables.DisturbanceLineFilters
 import at.wls_android.app.composables.DisturbanceTypeFilters
@@ -50,6 +62,7 @@ import at.wls_android.app.model.LineStatePair
 import at.wls_android.app.viewmodel.FilterData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.util.network.UnresolvedAddressException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -104,9 +117,11 @@ fun FilterScreen(
     var showFromPicker by remember { mutableStateOf(false) }
     var showToPicker by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var spinnerLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(key1 = Unit) {
         try {
+            spinnerLoading = true
             val client = getKtorClient(baseUrl = baseUrl, path = "/api/lines")
             val response = client.get {}
             val body = response.body<List<Line>>()
@@ -122,12 +137,21 @@ fun FilterScreen(
                         lineStates.add(LineStatePair(line, true))
                     }
                 }
+                errorMessage = ""
             } else {
-                errorMessage = "Fehler beim Laden der Linien: ${response.status}"
+                errorMessage = if (response.status.value == 400) {
+                    "Fehlerhafte Anfrage"
+                } else {
+                    "Fehler beim Laden der Linien: ${response.status}"
+                }
             }
+        } catch (_: UnresolvedAddressException) {
+            errorMessage = "Server nicht erreichbar. Überprüfe die Basis-URL in den Einstellungen."
         } catch (e: Exception) {
             Log.e("FilterScreen", "Error loading lines: ${e.message}", e)
-            errorMessage = "Fehler beim Laden der Linien."
+            errorMessage = "Es ist ein Fehler aufgetreten"
+        } finally {
+            spinnerLoading = false
         }
     }
 
@@ -159,138 +183,178 @@ fun FilterScreen(
         topBar = { WlsHeader(navController, disableSettings = true) },
         bottomBar = {
             Button(
-                onClick = { applyFilters() },
+                onClick = { if (errorMessage.isEmpty()) applyFilters() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .navigationBarsPadding()
+                    .then(
+                        if (errorMessage.isNotEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
+                    ),
+                enabled = errorMessage.isEmpty()
             ) {
                 Text("Filter anwenden")
             }
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            if (errorMessage.isNotEmpty()) {
-                Text(errorMessage, color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
+            if (spinnerLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(top = 125.dp)
+                        .align(Alignment.TopCenter)
+                )
             }
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 18.dp)
-            ) {
-                item {
-                    Row(
+            if (errorMessage.isNotEmpty() && !spinnerLoading) {
+                Column(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center)
+                        .padding(20.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .toggleable(
-                                value = onlyActive,
-                                onValueChange = { onlyActive = it },
-                                role = Role.Checkbox
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = onlyActive,
-                            onCheckedChange = null
+                            .size(50.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Text(
+                        text = errorMessage,
+                        style = TextStyle(
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
-                        Text(
-                            text = "Nur offene Störungen anzeigen",
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
+                    )
                 }
-
-                item {
-                    Text("Sortieren nach:", style = androidx.compose.material3.MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
-                    ExposedDropdownMenuBox(
-                        expanded = orderByExpanded,
-                        onExpandedChange = { orderByExpanded = !orderByExpanded },
-                    ) {
-                        TextField(
-                            value = orderBy.text,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = orderByExpanded) },
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            }
+            else if (!spinnerLoading && errorMessage.isEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 18.dp)
+                ) {
+                    item {
+                        Row(
                             modifier = Modifier
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                                 .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = orderByExpanded,
-                            onDismissRequest = { orderByExpanded = false }
+                                .padding(vertical = 8.dp)
+                                .toggleable(
+                                    value = onlyActive,
+                                    onValueChange = { onlyActive = it },
+                                    role = Role.Checkbox
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            OrderType.entries.forEach { selectionOption ->
-                                DropdownMenuItem(
-                                    text = { Text(text = selectionOption.text) },
-                                    onClick = {
-                                        orderBy = selectionOption
-                                        orderByExpanded = false
-                                    }
-                                )
+                            Checkbox(
+                                checked = onlyActive,
+                                onCheckedChange = null
+                            )
+                            Text(
+                                text = "Nur offene Störungen anzeigen",
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+
+                    item {
+                        Text("Sortieren nach:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                        ExposedDropdownMenuBox(
+                            expanded = orderByExpanded,
+                            onExpandedChange = { orderByExpanded = !orderByExpanded },
+                        ) {
+                            TextField(
+                                value = orderBy.text,
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = orderByExpanded) },
+                                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                                modifier = Modifier
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = orderByExpanded,
+                                onDismissRequest = { orderByExpanded = false }
+                            ) {
+                                OrderType.entries.forEach { selectionOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(text = selectionOption.text) },
+                                        onClick = {
+                                            orderBy = selectionOption
+                                            orderByExpanded = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                item {
-                    Text("Zeitraum:", style = androidx.compose.material3.MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
-                    Row(Modifier.fillMaxWidth()) {
-                        TextField(
-                            value = fromDate.format(displayDateFormatter),
-                            onValueChange = {},
-                            label = { Text("Startdatum") },
-                            readOnly = true,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 4.dp),
-                            interactionSource = remember { MutableInteractionSource() }
-                                .also { interactionSource ->
-                                    LaunchedEffect(interactionSource) {
-                                        interactionSource.interactions.collect {
-                                            if (it is PressInteraction.Release) showFromPicker = true
+                    item {
+                        Text("Zeitraum:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                        Row(Modifier.fillMaxWidth()) {
+                            TextField(
+                                value = fromDate.format(displayDateFormatter),
+                                onValueChange = {},
+                                label = { Text("Startdatum") },
+                                readOnly = true,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 4.dp),
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect {
+                                                if (it is PressInteraction.Release) showFromPicker = true
+                                            }
                                         }
                                     }
-                                }
+                            )
+                            TextField(
+                                value = toDate.format(displayDateFormatter),
+                                onValueChange = {},
+                                label = { Text("Enddatum") },
+                                readOnly = true,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 4.dp),
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect {
+                                                if (it is PressInteraction.Release) showToPicker = true
+                                            }
+                                        }
+                                    }
+                            )
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.size(16.dp))
+                        DisturbanceTypeFilters(
+                            stateList = disturbanceTypeBoolStates
                         )
-                        TextField(
-                            value = toDate.format(displayDateFormatter),
-                            onValueChange = {},
-                            label = { Text("Enddatum") },
-                            readOnly = true,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 4.dp),
-                            interactionSource = remember { MutableInteractionSource() }
-                                .also { interactionSource ->
-                                    LaunchedEffect(interactionSource) {
-                                        interactionSource.interactions.collect {
-                                            if (it is PressInteraction.Release) showToPicker = true
-                                        }
-                                    }
-                                }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.size(16.dp))
+                        DisturbanceLineFilters(
+                            disturbanceLines = lineStates
                         )
                     }
                 }
 
-                item {
-                    Spacer(modifier = Modifier.size(16.dp))
-                    DisturbanceTypeFilters(
-                        stateList = disturbanceTypeBoolStates
-                    )
-                }
-                 item {
-                    Spacer(modifier = Modifier.size(16.dp))
-                    DisturbanceLineFilters(
-                        disturbanceLines = lineStates
-                    )
-                }
+
             }
         }
     }

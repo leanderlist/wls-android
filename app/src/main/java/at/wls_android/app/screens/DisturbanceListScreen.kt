@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -60,6 +62,7 @@ import at.wls_android.app.navigation.Screen
 import at.wls_android.app.viewmodel.FilterData
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -89,7 +92,7 @@ fun DisturbanceListScreen(
     suspend fun loadDisturbances(initialIdToOpen: String = "") {
         try {
             disturbanceList.clear()
-            val client = getKtorClient(baseUrl = baseUrl, path="/api/disturbances")
+            val client = getKtorClient(baseUrl = baseUrl, path = "/api/disturbances")
             val response = client.get {
                 url {
                     if (filters.isEmpty()) {
@@ -111,10 +114,18 @@ fun DisturbanceListScreen(
             if (response.status.value in 200..299) {
                 val body = response.body<List<Disturbance>>()
                 disturbanceList.addAll(body)
+                if (disturbanceList.isEmpty())
+                    snackBarHost.showSnackbar("Keine Störungen gefunden")
                 errorMessage = ""
             } else {
-                errorMessage = "Es sind keine Störungen vorhanden"
+                errorMessage = if (response.status.value == 400) {
+                    "Fehlerhafte Anfrage"
+                } else {
+                    "Fehler beim Laden der Störungen"
+                }
             }
+        } catch (_: UnresolvedAddressException) {
+            errorMessage = "Server nicht erreichbar. Überprüfe die Basis-URL in den Einstellungen."
         } catch (_: Exception) {
             errorMessage = "Es ist ein Fehler aufgetreten"
         } finally {
@@ -124,7 +135,7 @@ fun DisturbanceListScreen(
                     sheetDisturbance = disturbance
                     showBottomSheet = true
                 } else {
-                    coroutineScope.launch { // SnackbarHostState.showSnackbar is a suspend function
+                    coroutineScope.launch {
                         snackBarHost.showSnackbar("Gewählte Störung nicht gefunden")
                     }
                 }
@@ -309,13 +320,31 @@ fun DisturbanceListScreen(
                     }
                 }
                 if (errorMessage.isNotEmpty())
-                    Text(
-                        text = errorMessage,
+                    Column(
                         modifier = Modifier
-                            .zIndex(11F)
-                            .align(Alignment.TopCenter)
-                            .padding(top = 125.dp)
-                    )
+                            .zIndex(1f)
+                            .align(Alignment.Center)
+                            .padding(20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                        Spacer(modifier = Modifier.size(10.dp))
+                        Text(
+                            text = errorMessage,
+                            style = TextStyle(
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                        )
+                    }
             }
         }
     }

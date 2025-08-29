@@ -10,48 +10,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.ArrowLeft
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import at.wls_android.app.R
+import at.wls_android.app.enums.DisturbanceType
 
 @Composable
 fun DisturbanceTypeFilters(
-    disturbanceTypes: MutableList<MutableState<Boolean>>,
+    stateList: SnapshotStateList<MutableState<Boolean>>,
     modifier: Modifier = Modifier
 ) {
-
-    val typeTexts = listOf(
-        "Verspätungen",
-        "Verkehrsunfälle",
-        "Schadhafte Fahrzeuge",
-        "Gleisschäden",
-        "Weichenstörungen",
-        "Fahrleitungsgebrechen",
-        "Signalstörungen",
-        "Rettungseinsätze",
-        "Polizeieinsätze",
-        "Feuerwehreinsätze",
-        "Falschparker",
-        "Demonstrationen",
-        "Veranstaltungen",
-        "Sonstige"
-    )
-
     val showTypes = remember {
         mutableStateOf(false)
     }
@@ -63,16 +47,14 @@ fun DisturbanceTypeFilters(
             onClick = { showTypes.value = !showTypes.value },
             modifier = Modifier
                 .padding(top = 5.dp)
-                .padding(horizontal = 10.dp)
         ) {
             Row {
                 Text(
                     text = "Störungstypen",
                     textAlign = TextAlign.Start,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier
-                        .padding(5.dp)
-                        .padding(end = 10.dp)
+                        .padding(8.dp)
                         .wrapContentWidth()
                         .align(Alignment.CenterVertically)
 
@@ -81,27 +63,27 @@ fun DisturbanceTypeFilters(
                     thickness = 2.dp,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .weight(1F)
+                        .weight(1F),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Icon(
-                    Icons.Rounded.ArrowLeft,
-                    contentDescription = stringResource(R.string.app_name),
+                    (if (!showTypes.value) Icons.AutoMirrored.Rounded.ArrowLeft else Icons.Rounded.ArrowDropDown),
                     tint = Color.White,
                     modifier = Modifier
                         .padding(5.dp)
-                        .align(Alignment.CenterVertically)
+                        .align(Alignment.CenterVertically),
+                    contentDescription = null
                 )
             }
         }
 
         if (showTypes.value) {
             Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-                for (i in 0..13) {
-                    DisturbanceType(label = typeTexts[i], checked = disturbanceTypes[i])
+                DisturbanceType.entries.forEachIndexed { index, disturbanceType ->
+                    DisturbanceType(label = disturbanceType.text, checked = stateList[index])
                 }
             }
         }
-
     }
 }
 
@@ -133,5 +115,4 @@ fun DisturbanceType(
                 .align(Alignment.CenterVertically)
         )
     }
-
 }

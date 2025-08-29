@@ -1,13 +1,15 @@
 package at.wls_android.app.data
 
+import at.wls_android.app.enums.DisturbanceType
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Disturbance(
-    val descriptions: List<Description>,
-    val end_time: String?,
     val id: String,
-    val lines: List<Line>,
-    val start_time: String,
-    val title: String
+    val title: String,
+    val type: DisturbanceType,
+    val startedAt: String,
+    val endedAt: String?,
+    val descriptions: List<Description>,
+    val lines: List<Line>
 )

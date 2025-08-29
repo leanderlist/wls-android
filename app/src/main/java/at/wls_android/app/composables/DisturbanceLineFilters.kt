@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import at.wls_android.app.enums.LineType
 import at.wls_android.app.model.LineStatePair
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -22,10 +23,11 @@ fun DisturbanceLineFilters(
     disturbanceLines: SnapshotStateList<LineStatePair>,
     modifier: Modifier = Modifier
 ) {
-    val busList = disturbanceLines.toList().filter { it.line.type == 0 } //3
-    val tramList = disturbanceLines.toList().filter { it.line.type == 1 } //2
-    val metroList = disturbanceLines.toList().filter { it.line.type == 2 } //1
-    val miscList = disturbanceLines.toList().filter { it.line.type == 3 } //4
+    val busList = disturbanceLines.toList().filter { it.line.type == LineType.Bus }
+    val tramList = disturbanceLines.toList().filter { it.line.type == LineType.Tram }
+    val metroList = disturbanceLines.toList().filter { it.line.type == LineType.Metro }
+    val nightList = disturbanceLines.toList().filter { it.line.type == LineType.Night }
+    val miscList = disturbanceLines.toList().filter { it.line.type == LineType.Misc }
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -83,26 +85,27 @@ fun DisturbanceLineFilters(
         ListLines(
             title = "U-Bahnen",
             lineList = metroList,
-            stateList = disturbanceLines,
-            type = 2
+            stateList = disturbanceLines
         )
         ListLines(
             title = "Straßenbahnen",
             lineList = tramList,
-            stateList = disturbanceLines,
-            type = 1
+            stateList = disturbanceLines
         )
         ListLines(
             title = "Busse",
             lineList = busList,
-            stateList = disturbanceLines,
-            type = 0
+            stateList = disturbanceLines
+        )
+        ListLines(
+            title = "Nachtlinien",
+            lineList = nightList,
+            stateList = disturbanceLines
         )
         ListLines(
             title = "Sonstiges",
             lineList = miscList,
-            stateList = disturbanceLines,
-            type = 3
+            stateList = disturbanceLines
         )
     }
 }

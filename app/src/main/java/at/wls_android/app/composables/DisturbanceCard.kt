@@ -22,8 +22,8 @@ fun DisturbanceCard(
     disturbance: Disturbance,
     modifier: Modifier = Modifier
 ) {
-    var endTime: String? = disturbance.end_time
-    val startTime: String = disturbance.start_time
+    var endTime: String? = disturbance.endedAt
+    val startTime: String = disturbance.startedAt
 
     if (endTime != null) {
         try {

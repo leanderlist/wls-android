@@ -1,14 +1,15 @@
 package at.wls_android.app.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import at.wls_android.app.data.Line
-import at.wls_android.app.model.LineStatePair
 
 class SettingsData : ViewModel() {
-    var selectedLines = mutableListOf<LineStatePair>()
-    var theme = mutableStateOf("standard")
-    var baseUrl = mutableStateOf("https://wls.byleo.net")
+
+    private val subscribedLines = mutableStateListOf<Line>()
+    private var theme = mutableStateOf("standard")
+    private var baseUrl = mutableStateOf("https://wls.byleo.net")
 
     fun setTheme(theme: String) {
         if (theme != "standard" && theme != "dynamic") {
@@ -22,50 +23,31 @@ class SettingsData : ViewModel() {
     }
 
     fun setBaseUrl(baseUrl: String) {
-        this.baseUrl.value = baseUrl
+        this.baseUrl.value = baseUrl.trim().let {
+            it.ifEmpty { "https://wls.byleo.net" }
+        }
     }
 
     fun getBaseUrl(): String {
         return baseUrl.value
     }
 
-    fun addLine(line: LineStatePair) {
-        selectedLines.add(line)
+    fun setSubscribedLines(lines: List<Line>) {
+        resetSubscribedLines()
+        subscribedLines.addAll(lines)
     }
 
-    fun removeLine(line: LineStatePair) {
-        selectedLines.remove(line)
-    }
-
-    fun resetLines() {
-        selectedLines.clear()
-    }
-
-    @Override
-    operator fun contains(line: Line): Boolean {
-        for (lineStatePair in selectedLines) {
-            if (lineStatePair.line == line) {
-                return true
-            }
+    fun addSubscribedLine(line: Line) {
+        if (!subscribedLines.contains(line)) {
+            subscribedLines.add(line)
         }
-        return false
     }
 
-    fun isEnabled(line: Line): Boolean {
-        for (lineStatePair in selectedLines) {
-            if (lineStatePair.line == line) {
-                return lineStatePair.enabled
-            }
-        }
-        return false
+    fun getSubscribedLines(): List<Line> {
+        return subscribedLines.toList()
     }
 
-    fun hasNoEnabledLines(): Boolean {
-        for (lineStatePair in selectedLines) {
-            if (lineStatePair.enabled) {
-                return false
-            }
-        }
-        return true
+    fun resetSubscribedLines() {
+        subscribedLines.clear()
     }
 }
